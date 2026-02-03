@@ -24,6 +24,7 @@ public class FlyController : MonoBehaviour
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
+        float s = Input.GetAxis("Y Axis");
 
         if (h != 0 || v != 0)
         {
@@ -40,6 +41,7 @@ public class FlyController : MonoBehaviour
         Vector3 right = transform.right;
 
         Vector3 direction = (forward * v + right * h).normalized;
+
 
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
