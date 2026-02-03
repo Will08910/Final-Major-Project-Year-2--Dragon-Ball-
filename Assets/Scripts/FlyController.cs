@@ -24,7 +24,6 @@ public class FlyController : MonoBehaviour
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-        float s = Input.GetAxis("Y Axis");
 
         if (h != 0 || v != 0)
         {
