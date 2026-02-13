@@ -5,10 +5,13 @@ using UnityEngine;
 public class Attacks : MonoBehaviour
 {
     public GameObject KC;
+    public GameObject KCB;
+
     void Start()
     {
         KC.SetActive(false);
-        
+        KCB.SetActive(false);
+
     }
 
 
@@ -28,8 +31,16 @@ public class Attacks : MonoBehaviour
 
     public IEnumerator KCDelay()
     {
-        yield return new WaitForSeconds(6);
+        yield return new WaitForSeconds(2);
         KC.SetActive(false);
+        KCB.SetActive(true);
+        StartCoroutine(KCDelay2());
+    }
+
+    public IEnumerator KCDelay2()
+    {
+        yield return new WaitForSeconds(5);
+        KCB.SetActive(false);
     }
 
 

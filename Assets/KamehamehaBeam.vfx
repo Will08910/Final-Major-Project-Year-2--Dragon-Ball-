@@ -107,7 +107,7 @@ MonoBehaviour:
     x: 315
     y: -407
     width: 847
-    height: 2031
+    height: 2027
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1822,7 +1822,7 @@ MonoBehaviour:
       slotIndex: 0
   m_OutputFlowSlot:
   - link: []
-  blendMode: 1
+  blendMode: 0
   cullMode: 3
   zWriteMode: 0
   zTestMode: 0
@@ -1952,7 +1952,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"8101b5c69041c2b4b8c47213da0bfcbe","type":3}}'
+      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"97462e22b140dcd4e82a35b149ed0454","type":3}}'
     m_Space: -1
   m_Property:
     name: mainTexture
@@ -2035,7 +2035,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":2.341729164123535,"y":10.099992752075196,"z":44.7270393371582}'
+      m_SerializableObject: '{"x":1.4364532232284547,"y":25.671010971069337,"z":43.50398635864258}'
     m_Space: -1
   m_Property:
     name: _Color
@@ -2204,7 +2204,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":1.0,"y":1.0}'
+      m_SerializableObject: '{"x":2.109999895095825,"y":1.0}'
     m_Space: -1
   m_Property:
     name: uvScale
@@ -2698,7 +2698,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: -1
+      m_SerializableObject: -5
     m_Space: -1
   m_Property:
     name: 
