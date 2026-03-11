@@ -4,27 +4,33 @@ using UnityEngine;
 
 public class Attacks : MonoBehaviour
 {
-    public GameObject KC;
-    public GameObject KCB;
+    public GameObject kC;
+    public GameObject kCB;
+    public GameObject canvas1;
+    public GameObject chargeKi;
+    public Animator kiCharge;
+    public Animator ScreenShake;
 
     void Start()
     {
-        KC.SetActive(false);
-        KCB.SetActive(false);
-
+        kC.SetActive(false);
+        kCB.SetActive(false);
+        canvas1.SetActive(false);
+        chargeKi.SetActive(false);
     }
 
 
     void Update()
     {
         Kamehameha();
+        ChargeKi();
     }
     
     public void Kamehameha()
     {
         if (Input.GetKey(KeyCode.R))
         {
-            KC.SetActive(true);
+            kC.SetActive(true);
             StartCoroutine(KCDelay());
         }
     }
@@ -32,17 +38,39 @@ public class Attacks : MonoBehaviour
     public IEnumerator KCDelay()
     {
         yield return new WaitForSeconds(2f);
-        KCB.SetActive(true);
+        canvas1.SetActive(true);
+        kCB.SetActive(true);
         StartCoroutine(KCDelay2());
+        ScreenShake.SetTrigger("Shake");
     }
 
     public IEnumerator KCDelay2()
     {
-        yield return new WaitForSeconds(1);
-        KC.SetActive(false);
-        yield return new WaitForSeconds(5);
-        KCB.SetActive(false);
+        yield return new WaitForSeconds(3);
+        kC.SetActive(false);
+        canvas1.SetActive(false);
+        kCB.SetActive(false);
+        ScreenShake.ResetTrigger("Shake");
     }
 
+    public void ChargeKi()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ScreenShake.SetTrigger("Shake");
+            chargeKi.SetActive(true);
+        }
 
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            StartCoroutine(KiFade());
+        }
+    }
+
+    public IEnumerator KiFade()
+    {
+        kiCharge.SetTrigger("Fade");
+        yield return new WaitForSeconds(1);
+        chargeKi.SetActive(false);
+    }
 }
