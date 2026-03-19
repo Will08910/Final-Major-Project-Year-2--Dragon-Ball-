@@ -3,9 +3,9 @@ using UnityEngine;
 public class FlyController : MonoBehaviour
 {
     public float moveSpeed;
+    public float verticalSpeed = 5f;
     public float maxFloatHeight = 10f;
     public float minFloatHeight;
-    public Transform target;
 
     private float currentHeight;
 
@@ -17,10 +17,6 @@ public class FlyController : MonoBehaviour
 
     void Update()
     {
-        if (target == null) return;
-
-        Vector3 lookDirection = target.position - transform.position;
-        transform.rotation = Quaternion.LookRotation(lookDirection);
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -30,8 +26,23 @@ public class FlyController : MonoBehaviour
             MoveCharacter(h, v);
         }
 
+        HandleVerticalMovement();
+
         currentHeight = Mathf.Clamp(currentHeight, minFloatHeight, maxFloatHeight);
         transform.position = new Vector3(transform.position.x, currentHeight, transform.position.z);
+    }
+
+    void HandleVerticalMovement()
+    {
+        if (Input.GetKey(KeyCode.Space))
+        {
+            currentHeight += verticalSpeed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            currentHeight -= verticalSpeed * Time.deltaTime;
+        }
     }
 
     private void MoveCharacter(float h, float v)
@@ -40,7 +51,6 @@ public class FlyController : MonoBehaviour
         Vector3 right = transform.right;
 
         Vector3 direction = (forward * v + right * h).normalized;
-
 
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
