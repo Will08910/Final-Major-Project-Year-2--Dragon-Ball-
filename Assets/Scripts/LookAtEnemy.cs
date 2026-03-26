@@ -1,20 +1,18 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-public class LookAtPlayer : MonoBehaviour
+public class LookAtEnemy : MonoBehaviour
 {
     public Transform target;
-
-    void Start()
-    {
-        
-    }
-
 
     void Update()
     {
         if (target == null) return;
 
         Vector3 lookDirection = target.position - transform.position;
+
+        // Prevent tilting (IMPORTANT)
+        lookDirection.y = 0f;
+
         transform.rotation = Quaternion.LookRotation(lookDirection);
     }
 }

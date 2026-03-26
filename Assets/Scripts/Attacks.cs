@@ -16,8 +16,6 @@ public class Attacks : MonoBehaviour
     public GameObject chargeKi;
     public Animator kiCharge;
 
-    public Animator screenShake;
-
     private bool isCharging = false;
     private bool isFiring = false;
 
@@ -28,8 +26,13 @@ public class Attacks : MonoBehaviour
     public float kiEaseLerpSpeed = 0.05f;
 
     public int chargeValue = 1;
+
+    private Rigidbody rb; // ✅ NEW
+
     void Start()
     {
+        rb = GetComponent<Rigidbody>(); // ✅ GET RIGIDBODY
+
         kC.SetActive(false);
         kCB.SetActive(false);
         canvas1.SetActive(false);
@@ -45,6 +48,7 @@ public class Attacks : MonoBehaviour
         HandleCharge();
         HandleKamehameha();
 
+        // Smooth ki bar
         if (kiBar.value != currentKi)
         {
             kiBar.value = Mathf.Lerp(kiBar.value, currentKi, kiLerpSpeed);
@@ -55,6 +59,7 @@ public class Attacks : MonoBehaviour
             }
         }
 
+        // Ease bar lag
         if (Mathf.Abs(kiBar.value - currentKi) < 0.001f)
         {
             if (easeKiBar.value != currentKi)
@@ -64,7 +69,7 @@ public class Attacks : MonoBehaviour
                 if (Mathf.Abs(easeKiBar.value - currentKi) < 0.01f)
                 {
                     easeKiBar.value = currentKi;
-                }    
+                }
             }
         }
     }
@@ -80,8 +85,15 @@ public class Attacks : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C) && !isFiring)
         {
             isCharging = true;
+
+            // 🔥 STOP movement when charging starts
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
             chargeKi.SetActive(true);
-            screenShake.SetTrigger("Shake");
         }
 
         if (Input.GetKeyUp(KeyCode.C) && isCharging)
@@ -92,7 +104,7 @@ public class Attacks : MonoBehaviour
 
         if (isCharging)
         {
-            currentKi += chargeValue * Time.deltaTime * 100f; // adjust speed here
+            currentKi += chargeValue * Time.deltaTime * 100f;
             currentKi = Mathf.Clamp(currentKi, 0, maxKi);
         }
     }
@@ -117,8 +129,16 @@ public class Attacks : MonoBehaviour
     {
         isFiring = true;
 
+        // Disable movement
         if (movementScript != null)
             movementScript.enabled = false;
+
+        // 💥 HARD STOP PLAYER
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
 
         kC.SetActive(true);
 
@@ -126,7 +146,6 @@ public class Attacks : MonoBehaviour
 
         canvas1.SetActive(true);
         kCB.SetActive(true);
-        screenShake.SetTrigger("Shake");
 
         yield return new WaitForSeconds(3f);
 
@@ -134,6 +153,7 @@ public class Attacks : MonoBehaviour
         canvas1.SetActive(false);
         kCB.SetActive(false);
 
+        // Re-enable movement
         if (movementScript != null)
             movementScript.enabled = true;
 

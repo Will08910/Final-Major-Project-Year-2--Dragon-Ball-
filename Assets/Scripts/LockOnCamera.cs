@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class LockOnCamera : MonoBehaviour
 {
@@ -10,9 +10,10 @@ public class LockOnCamera : MonoBehaviour
     void LateUpdate()
     {
         if (follow == null || lookTarget == null) return;
-
-        Vector3 desiredPosition = follow.position + offset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
-        transform.LookAt(lookTarget);
+        {
+            Vector3 desiredPosition = follow.position + offset;
+            transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
+        }
     }
+
 }

@@ -1,57 +1,53 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FlyController : MonoBehaviour
 {
-    public float moveSpeed;
+    public float moveSpeed = 10f;
     public float verticalSpeed = 5f;
-    public float maxFloatHeight = 10f;
-    public float minFloatHeight;
 
-    private float currentHeight;
+    private Rigidbody rb;
 
     void Start()
     {
-        currentHeight = transform.position.y;
-        Cursor.lockState = CursorLockMode.Locked;
+        rb = GetComponent<Rigidbody>();
+
+        // Recommended settings
+        rb.useGravity = false;
+        rb.angularDamping = 0f;
     }
 
-    void Update()
+    void FixedUpdate()
     {
-
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if (h != 0 || v != 0)
-        {
-            MoveCharacter(h, v);
-        }
-
-        HandleVerticalMovement();
-
-        currentHeight = Mathf.Clamp(currentHeight, minFloatHeight, maxFloatHeight);
-        transform.position = new Vector3(transform.position.x, currentHeight, transform.position.z);
-    }
-
-    void HandleVerticalMovement()
-    {
-        if (Input.GetKey(KeyCode.Space))
-        {
-            currentHeight += verticalSpeed * Time.deltaTime;
-        }
-
-        if (Input.GetKey(KeyCode.LeftControl))
-        {
-            currentHeight -= verticalSpeed * Time.deltaTime;
-        }
-    }
-
-    private void MoveCharacter(float h, float v)
-    {
         Vector3 forward = transform.forward;
         Vector3 right = transform.right;
 
-        Vector3 direction = (forward * v + right * h).normalized;
+        Vector3 move = (forward * v + right * h) * moveSpeed;
 
-        transform.position += direction * moveSpeed * Time.deltaTime;
+        float vertical = 0f;
+
+        if (Input.GetKey(KeyCode.Space))
+            vertical = verticalSpeed;
+        else if (Input.GetKey(KeyCode.LeftControl))
+            vertical = -verticalSpeed;
+
+        Vector3 newVelocity = new Vector3(move.x, vertical, move.z);
+
+        // ✅ DEADZONE (prevents drifting)
+        if (Mathf.Abs(h) < 0.1f && Mathf.Abs(v) < 0.1f)
+        {
+            newVelocity.x = 0f;
+            newVelocity.z = 0f;
+        }
+
+        if (!Input.GetKey(KeyCode.Space) && !Input.GetKey(KeyCode.LeftControl))
+        {
+            newVelocity.y = 0f;
+        }
+
+        // ✅ APPLY VELOCITY
+        rb.linearVelocity = newVelocity;
     }
 }
