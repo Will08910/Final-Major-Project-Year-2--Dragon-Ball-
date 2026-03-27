@@ -7,6 +7,10 @@ public class Attacks : MonoBehaviour
     public GameObject kC;
     public GameObject kCB;
     public GameObject canvas1;
+    public CameraFovController camController;
+    public GameObject lightning;
+
+    public Animator cam;
 
     public Slider kiBar;
     public Slider easeKiBar;
@@ -27,16 +31,19 @@ public class Attacks : MonoBehaviour
 
     public int chargeValue = 1;
 
-    private Rigidbody rb; // ✅ NEW
+    private Rigidbody rb;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>(); // ✅ GET RIGIDBODY
+        rb = GetComponent<Rigidbody>();
 
+        cam.enabled = true;
+        camController.enabled = false;
         kC.SetActive(false);
         kCB.SetActive(false);
         canvas1.SetActive(false);
         chargeKi.SetActive(false);
+        lightning.SetActive(false);
 
         currentKi = maxKi;
         kiBar.value = currentKi;
@@ -48,7 +55,7 @@ public class Attacks : MonoBehaviour
         HandleCharge();
         HandleKamehameha();
 
-        // Smooth ki bar
+
         if (kiBar.value != currentKi)
         {
             kiBar.value = Mathf.Lerp(kiBar.value, currentKi, kiLerpSpeed);
@@ -59,7 +66,7 @@ public class Attacks : MonoBehaviour
             }
         }
 
-        // Ease bar lag
+
         if (Mathf.Abs(kiBar.value - currentKi) < 0.001f)
         {
             if (easeKiBar.value != currentKi)
@@ -86,7 +93,7 @@ public class Attacks : MonoBehaviour
         {
             isCharging = true;
 
-            // 🔥 STOP movement when charging starts
+
             if (rb != null)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -122,6 +129,8 @@ public class Attacks : MonoBehaviour
         {
             StartCoroutine(KamehamehaRoutine());
             UseKi(2000);
+            camController.enabled = true;
+            cam.SetTrigger("Fov");
         }
     }
 
@@ -129,11 +138,11 @@ public class Attacks : MonoBehaviour
     {
         isFiring = true;
 
-        // Disable movement
+
         if (movementScript != null)
             movementScript.enabled = false;
 
-        // 💥 HARD STOP PLAYER
+
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -141,6 +150,7 @@ public class Attacks : MonoBehaviour
         }
 
         kC.SetActive(true);
+        lightning.SetActive(true);
 
         yield return new WaitForSeconds(2f);
 
@@ -149,13 +159,15 @@ public class Attacks : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
 
+        lightning.SetActive(false);
         kC.SetActive(false);
         canvas1.SetActive(false);
         kCB.SetActive(false);
 
-        // Re-enable movement
+
         if (movementScript != null)
             movementScript.enabled = true;
+            camController.enabled = false;
 
         ResetAttack();
     }

@@ -5,6 +5,7 @@ public class KamehamehaDamage : MonoBehaviour
     public int damage = 50;
     public float knockbackForce = 5f;
     public bool useDamageOverTime = true;
+    public ParticleSystem hitEffect;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -13,7 +14,13 @@ public class KamehamehaDamage : MonoBehaviour
             ApplyDamage(other);
             ApplyKnockback(other);
         }
+
+        if (other.CompareTag("Ground"))
+        {
+            Instantiate(hitEffect);
+        }
     }
+
 
     private void OnTriggerStay(Collider other)
     {

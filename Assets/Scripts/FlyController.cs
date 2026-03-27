@@ -4,6 +4,9 @@ public class FlyController : MonoBehaviour
 {
     public float moveSpeed = 10f;
     public float verticalSpeed = 5f;
+    float targetFOV;
+
+    public Camera cam;
 
     private Rigidbody rb;
 
@@ -11,8 +14,7 @@ public class FlyController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
 
-        // Recommended settings
-        rb.useGravity = false;
+
         rb.angularDamping = 0f;
     }
 
@@ -35,7 +37,6 @@ public class FlyController : MonoBehaviour
 
         Vector3 newVelocity = new Vector3(move.x, vertical, move.z);
 
-        // ✅ DEADZONE (prevents drifting)
         if (Mathf.Abs(h) < 0.1f && Mathf.Abs(v) < 0.1f)
         {
             newVelocity.x = 0f;
@@ -47,7 +48,18 @@ public class FlyController : MonoBehaviour
             newVelocity.y = 0f;
         }
 
-        // ✅ APPLY VELOCITY
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.W) ||
+            Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftControl))
+        {
+            targetFOV = 70f;
+        }
+        else
+        {
+            targetFOV = 60f;
+        }
+
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
+
         rb.linearVelocity = newVelocity;
     }
 }
