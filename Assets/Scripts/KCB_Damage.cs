@@ -7,6 +7,8 @@ public class KamehamehaDamage : MonoBehaviour
     public bool useDamageOverTime = true;
     public ParticleSystem hitEffect;
 
+    private bool hasSpawned = false;
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Enemy"))
@@ -15,10 +17,7 @@ public class KamehamehaDamage : MonoBehaviour
             ApplyKnockback(other);
         }
 
-        if (other.CompareTag("Ground"))
-        {
-            Instantiate(hitEffect);
-        }
+
     }
 
 

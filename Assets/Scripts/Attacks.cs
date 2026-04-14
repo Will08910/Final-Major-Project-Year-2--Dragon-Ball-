@@ -26,6 +26,9 @@ public class Attacks : MonoBehaviour
     public float maxKi;
     public float currentKi;
 
+    public float range = 100f;
+    public GameObject hitEffect;
+
     public float kiLerpSpeed = 0.1f;
     public float kiEaseLerpSpeed = 0.05f;
 
@@ -138,7 +141,6 @@ public class Attacks : MonoBehaviour
     {
         isFiring = true;
 
-
         if (movementScript != null)
             movementScript.enabled = false;
 
@@ -156,6 +158,29 @@ public class Attacks : MonoBehaviour
 
         canvas1.SetActive(true);
         kCB.SetActive(true);
+
+        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit[] hits = Physics.RaycastAll(ray, range);
+
+        Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 2f);
+
+        foreach (RaycastHit hit in hits)
+        {
+            Debug.Log("Hit: " + hit.collider.name);
+
+            if (hit.collider.CompareTag("Ground"))
+            {
+                GameObject effect = Instantiate(
+                    hitEffect,
+                    hit.point,
+                    Quaternion.LookRotation(hit.normal)
+                );
+
+                Destroy(effect, 3f);
+
+                break; 
+            }
+        }
 
         yield return new WaitForSeconds(3f);
 
