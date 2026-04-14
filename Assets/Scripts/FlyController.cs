@@ -5,6 +5,7 @@ public class FlyController : MonoBehaviour
     public float moveSpeed = 10f;
     public float verticalSpeed = 5f;
     float targetFOV;
+    public GameObject boostFly;
 
     public Camera cam;
 
@@ -58,7 +59,21 @@ public class FlyController : MonoBehaviour
             targetFOV = 60f;
         }
 
-        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            moveSpeed = 30f;
+            verticalSpeed = 30f;
+            boostFly.SetActive(true);
+        }
+
+        else
+        {
+            moveSpeed = 20f;
+            verticalSpeed = 20f;
+            boostFly.SetActive(false);
+        }
+
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
 
         rb.linearVelocity = newVelocity;
     }

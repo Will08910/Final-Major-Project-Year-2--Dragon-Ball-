@@ -6,6 +6,7 @@ public class KamehamehaDamage : MonoBehaviour
     public float knockbackForce = 5f;
     public bool useDamageOverTime = true;
     public ParticleSystem hitEffect;
+    public ParticleSystem kiHitEffect;
 
     private bool hasSpawned = false;
 

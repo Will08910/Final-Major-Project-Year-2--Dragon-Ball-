@@ -28,6 +28,7 @@ public class Attacks : MonoBehaviour
 
     public float range = 100f;
     public GameObject hitEffect;
+    public GameObject kiHitEffect;
 
     public float kiLerpSpeed = 0.1f;
     public float kiEaseLerpSpeed = 0.05f;
@@ -176,7 +177,14 @@ public class Attacks : MonoBehaviour
                     Quaternion.LookRotation(hit.normal)
                 );
 
+                GameObject effect2 = Instantiate(
+                    kiHitEffect,
+                    hit.point,
+                    Quaternion.LookRotation(hit.normal)
+                );
+
                 Destroy(effect, 3f);
+                Destroy(effect2, 3f);
 
                 break; 
             }
