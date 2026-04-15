@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Net;
+using UnityEngine;
 
 public class FlyController : MonoBehaviour
 {
@@ -6,6 +8,7 @@ public class FlyController : MonoBehaviour
     public float verticalSpeed = 5f;
     float targetFOV;
     public GameObject boostFly;
+    public Animator boostFlyFade;
 
     public Camera cam;
 
@@ -14,7 +17,7 @@ public class FlyController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
+        boostFly.SetActive(false);
 
         rb.angularDamping = 0f;
     }
@@ -63,18 +66,37 @@ public class FlyController : MonoBehaviour
         {
             moveSpeed = 30f;
             verticalSpeed = 30f;
-            boostFly.SetActive(true);
         }
 
         else
         {
             moveSpeed = 20f;
             verticalSpeed = 20f;
-            boostFly.SetActive(false);
         }
 
-            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
 
         rb.linearVelocity = newVelocity;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            boostFlyFade.SetBool("Fade", false);
+            boostFly.SetActive(true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            StartCoroutine(FadeTrail());
+        }
+    }
+
+    IEnumerator FadeTrail()
+    {
+        boostFlyFade.SetBool("Fade", true);
+        yield return new WaitForSeconds(3f);
+        //boostFly.SetActive(false);
     }
 }
