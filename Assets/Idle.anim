@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: IdleAura
+  m_Name: Idle
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -23,7 +23,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -33,8 +33,8 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: InitialModule.startColor.maxColor.a
-    path: 
+    attribute: InitialModule.startSize.scalar
+    path: Particle System (1)
     classID: 198
     script: {fileID: 0}
     flags: 0
@@ -44,7 +44,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -54,7 +54,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: InitialModule.startColor.maxColor.a
+    attribute: InitialModule.startSize.scalar
     path: Particle System
     classID: 198
     script: {fileID: 0}
@@ -68,8 +68,8 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 0
-      attribute: 2007035361
+      path: 1309929185
+      attribute: 3638086055
       script: {fileID: 0}
       typeID: 198
       customType: 27
@@ -78,7 +78,7 @@ AnimationClip:
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 922205677
-      attribute: 2007035361
+      attribute: 3638086055
       script: {fileID: 0}
       typeID: 198
       customType: 27
@@ -113,7 +113,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -123,8 +123,8 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: InitialModule.startColor.maxColor.a
-    path: 
+    attribute: InitialModule.startSize.scalar
+    path: Particle System (1)
     classID: 198
     script: {fileID: 0}
     flags: 0
@@ -134,7 +134,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -144,7 +144,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: InitialModule.startColor.maxColor.a
+    attribute: InitialModule.startSize.scalar
     path: Particle System
     classID: 198
     script: {fileID: 0}

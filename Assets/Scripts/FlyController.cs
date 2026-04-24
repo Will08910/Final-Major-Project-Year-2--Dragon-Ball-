@@ -12,6 +12,9 @@ public class FlyController : MonoBehaviour
 
     public Camera cam;
 
+    public Attacks attacksScript; 
+    public float boostKiDrainPerSecond = 100f;
+
     private Rigidbody rb;
 
     void Start()
@@ -62,12 +65,20 @@ public class FlyController : MonoBehaviour
             targetFOV = 60f;
         }
 
-        if (Input.GetKey(KeyCode.LeftShift))
+        bool boostInput = Input.GetKey(KeyCode.LeftShift);
+        bool hasKi = attacksScript == null || attacksScript.currentKi > 0f;
+        bool canBoost = boostInput && hasKi;
+
+        if (canBoost)
         {
             moveSpeed = 30f;
             verticalSpeed = 30f;
-        }
 
+            if (attacksScript != null)
+            {
+                attacksScript.currentKi = Mathf.Max(0f, attacksScript.currentKi - boostKiDrainPerSecond * Time.fixedDeltaTime);
+            }
+        }
         else
         {
             moveSpeed = 20f;
@@ -91,12 +102,16 @@ public class FlyController : MonoBehaviour
         {
             StartCoroutine(FadeTrail());
         }
+
+        if (attacksScript != null && attacksScript.currentKi <= 0f && boostFly.activeSelf)
+        {
+            boostFlyFade.SetBool("Fade", true);
+        }
     }
 
     IEnumerator FadeTrail()
     {
         boostFlyFade.SetBool("Fade", true);
         yield return new WaitForSeconds(3f);
-        //boostFly.SetActive(false);
     }
 }

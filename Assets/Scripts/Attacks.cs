@@ -4,31 +4,53 @@ using UnityEngine.UI;
 
 public class Attacks : MonoBehaviour
 {
+    [Header("Kamehameha Variables")]
     public GameObject kC;
     public GameObject kCB;
+    public Animator extraEffectsAnim;
+
+    [Header("Camera Effects")]
     public GameObject canvas1;
     public CameraFovController camController;
     public GameObject lightning;
-
     public Animator cam;
-
+    
+    [Header("Ki UI")]
     public Slider kiBar;
     public Slider easeKiBar;
 
     public MonoBehaviour movementScript;
-
+    
+    [Header("Ki Charge")]
     public GameObject chargeKi;
     public Animator kiCharge;
+    public float chargeCooldown = 0.5f;
 
     private bool isCharging = false;
+    private bool chargeOnCooldown = false;
     private bool isFiring = false;
 
     public float maxKi;
     public float currentKi;
 
     public float range = 100f;
+
+    [Header("Hit Effects")]
     public GameObject hitEffect;
     public GameObject kiHitEffect;
+
+    [Header("Ki Blast")]
+    public GameObject kiBlastPrefab;
+    public Transform kiSpawnPoint; // optional single spawn point (kept for compatibility)
+    public Transform kiSpawnPointA; // new spawn point A
+    public Transform kiSpawnPointB; // new spawn point B
+    public float kiBlastSpeed = 40f;
+    public float kiBlastHomingStrength = 5f;
+    public float kiBlastLifetime = 8f;
+    public float kiBlastCooldown = 0.5f;
+    public int kiBlastCost = 50;
+
+    private bool kiBlastOnCooldown = false;
 
     public float kiLerpSpeed = 0.1f;
     public float kiEaseLerpSpeed = 0.05f;
@@ -58,7 +80,7 @@ public class Attacks : MonoBehaviour
     {
         HandleCharge();
         HandleKamehameha();
-
+        HandleKiBlastInput();
 
         if (kiBar.value != currentKi)
         {
@@ -69,7 +91,6 @@ public class Attacks : MonoBehaviour
                 kiBar.value = currentKi;
             }
         }
-
 
         if (Mathf.Abs(kiBar.value - currentKi) < 0.001f)
         {
@@ -85,6 +106,79 @@ public class Attacks : MonoBehaviour
         }
     }
 
+    void HandleKiBlastInput()
+    {
+        if (Input.GetMouseButtonDown(1) && !isFiring && !isCharging && kiBlastPrefab != null && !kiBlastOnCooldown && currentKi >= kiBlastCost)
+        {
+            UseKi(kiBlastCost);
+            SpawnKiBlast();
+            StartCoroutine(KiBlastCooldownCoroutine());
+        }
+    }
+
+    void SpawnKiBlast()
+    {
+        Camera camRef = Camera.main;
+        Vector3 spawnPos;
+        Vector3 forward;
+
+        Transform chosenSpawn = null;
+
+        if (kiSpawnPointA != null && kiSpawnPointB != null)
+        {
+            chosenSpawn = (Random.value < 0.5f) ? kiSpawnPointA : kiSpawnPointB;
+        }
+        else if (kiSpawnPoint != null)
+        {
+            chosenSpawn = kiSpawnPoint;
+        }
+        else if (kiSpawnPointA != null)
+        {
+            chosenSpawn = kiSpawnPointA;
+        }
+        else if (kiSpawnPointB != null)
+        {
+            chosenSpawn = kiSpawnPointB;
+        }
+
+        if (chosenSpawn != null)
+        {
+            spawnPos = chosenSpawn.position;
+            forward = chosenSpawn.forward;
+        }
+        else if (camRef != null)
+        {
+            spawnPos = camRef.transform.position + camRef.transform.forward * 1.2f;
+            forward = camRef.transform.forward;
+        }
+        else
+        {
+            spawnPos = transform.position + transform.forward * 1.2f;
+            forward = transform.forward;
+        }
+
+        GameObject blast = Instantiate(kiBlastPrefab, spawnPos, Quaternion.LookRotation(forward));
+        Rigidbody blastRb = blast.GetComponent<Rigidbody>();
+        if (blastRb != null)
+            blastRb.linearVelocity = forward * kiBlastSpeed;
+
+        KiBlast kb = blast.GetComponent<KiBlast>();
+        if (kb != null)
+        {
+            kb.speed = kiBlastSpeed;
+            kb.homingStrength = kiBlastHomingStrength;
+            kb.lifetime = kiBlastLifetime;
+            kb.range = range;
+        }
+    }
+
+    IEnumerator KiBlastCooldownCoroutine()
+    {
+        kiBlastOnCooldown = true;
+        yield return new WaitForSeconds(kiBlastCooldown);
+        kiBlastOnCooldown = false;
+    }
+
     public void UseKi(int amount)
     {
         currentKi -= amount;
@@ -93,10 +187,9 @@ public class Attacks : MonoBehaviour
 
     void HandleCharge()
     {
-        if (Input.GetKeyDown(KeyCode.C) && !isFiring)
+        if (Input.GetKeyDown(KeyCode.C) && !isFiring && !isCharging && !chargeOnCooldown && (rb == null || rb.linearVelocity.magnitude == 0f))
         {
             isCharging = true;
-
 
             if (rb != null)
             {
@@ -111,6 +204,7 @@ public class Attacks : MonoBehaviour
         {
             isCharging = false;
             StartCoroutine(KiFade());
+            StartCoroutine(ChargeCooldownCoroutine());
         }
 
         if (isCharging)
@@ -118,6 +212,13 @@ public class Attacks : MonoBehaviour
             currentKi += chargeValue * Time.deltaTime * 100f;
             currentKi = Mathf.Clamp(currentKi, 0, maxKi);
         }
+    }
+
+    IEnumerator ChargeCooldownCoroutine()
+    {
+        chargeOnCooldown = true;
+        yield return new WaitForSeconds(chargeCooldown);
+        chargeOnCooldown = false;
     }
 
     IEnumerator KiFade()
@@ -145,7 +246,6 @@ public class Attacks : MonoBehaviour
         if (movementScript != null)
             movementScript.enabled = false;
 
-
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -154,9 +254,10 @@ public class Attacks : MonoBehaviour
 
         kC.SetActive(true);
         lightning.SetActive(true);
-
+        
         yield return new WaitForSeconds(2f);
 
+        extraEffectsAnim.SetTrigger("Fade");
         canvas1.SetActive(true);
         kCB.SetActive(true);
 
@@ -196,7 +297,6 @@ public class Attacks : MonoBehaviour
         kC.SetActive(false);
         canvas1.SetActive(false);
         kCB.SetActive(false);
-
 
         if (movementScript != null)
             movementScript.enabled = true;
