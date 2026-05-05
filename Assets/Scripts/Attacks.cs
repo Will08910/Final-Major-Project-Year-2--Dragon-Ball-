@@ -9,18 +9,39 @@ public class Attacks : MonoBehaviour
     public GameObject kCB;
     public Animator extraEffectsAnim;
 
+    [Header("Meteor Strike")]
+    public GameObject meteorStrike;
+    public Animator meteorStrikeAnim;
+    public ParticleSystem effect1;
+    public ParticleSystem effect2;
+    public int meteorStrikeCost = 400;
+    public float meteorCooldown = 4f;
+
+    [Header("Super Saiyan")]
+    public GameObject superSaiyan;
+    public float superSaiyanDrain = 50f;
+    public TrailRenderer boostTrail;
+    public ParticleSystem boost;
+
+    private Color originalTrailColor;
+    private float originalStartAlpha;
+    private float originalEndAlpha;
+
+    public static bool isSuperSaiyan = false;
+    public static float damageMultiplier = 1.3f;
+
     [Header("Camera Effects")]
     public GameObject canvas1;
     public CameraFovController camController;
     public GameObject lightning;
     public Animator cam;
-    
+
     [Header("Ki UI")]
     public Slider kiBar;
     public Slider easeKiBar;
 
     public MonoBehaviour movementScript;
-    
+
     [Header("Ki Charge")]
     public GameObject chargeKi;
     public Animator kiCharge;
@@ -41,9 +62,9 @@ public class Attacks : MonoBehaviour
 
     [Header("Ki Blast")]
     public GameObject kiBlastPrefab;
-    public Transform kiSpawnPoint; // optional single spawn point (kept for compatibility)
-    public Transform kiSpawnPointA; // new spawn point A
-    public Transform kiSpawnPointB; // new spawn point B
+    public Transform kiSpawnPoint;
+    public Transform kiSpawnPointA;
+    public Transform kiSpawnPointB;
     public float kiBlastSpeed = 40f;
     public float kiBlastHomingStrength = 5f;
     public float kiBlastLifetime = 8f;
@@ -51,6 +72,7 @@ public class Attacks : MonoBehaviour
     public int kiBlastCost = 50;
 
     private bool kiBlastOnCooldown = false;
+    private bool meteorOnCooldown = false;
 
     public float kiLerpSpeed = 0.1f;
     public float kiEaseLerpSpeed = 0.05f;
@@ -62,6 +84,16 @@ public class Attacks : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        meteorStrike.SetActive(false);
+
+        if (superSaiyan != null) superSaiyan.SetActive(false);
+
+        if (boostTrail != null)
+        {
+            originalTrailColor = boostTrail.startColor;
+            originalStartAlpha = boostTrail.startColor.a;
+            originalEndAlpha = boostTrail.endColor.a;
+        }
 
         cam.enabled = true;
         camController.enabled = false;
@@ -78,18 +110,25 @@ public class Attacks : MonoBehaviour
 
     void Update()
     {
+        MeteorStrike();
         HandleCharge();
         HandleKamehameha();
         HandleKiBlastInput();
+        HandleSuperSaiyan();
+        DrainSuperSaiyanKi();
+
+        if (isSuperSaiyan && boost != null)
+        {
+            var emission = boost.emission;
+            if (emission.enabled)
+                emission.enabled = false;
+        }
 
         if (kiBar.value != currentKi)
         {
             kiBar.value = Mathf.Lerp(kiBar.value, currentKi, kiLerpSpeed);
-
             if (Mathf.Abs(kiBar.value - currentKi) < 0.01f)
-            {
                 kiBar.value = currentKi;
-            }
         }
 
         if (Mathf.Abs(kiBar.value - currentKi) < 0.001f)
@@ -97,13 +136,155 @@ public class Attacks : MonoBehaviour
             if (easeKiBar.value != currentKi)
             {
                 easeKiBar.value = Mathf.Lerp(easeKiBar.value, currentKi, kiEaseLerpSpeed);
-
                 if (Mathf.Abs(easeKiBar.value - currentKi) < 0.01f)
-                {
                     easeKiBar.value = currentKi;
+            }
+        }
+    }
+
+    void HandleSuperSaiyan()
+    {
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if (!isSuperSaiyan && currentKi > 0)
+            {
+                isSuperSaiyan = true;
+
+                if (superSaiyan != null)
+                    superSaiyan.SetActive(true);
+
+                if (boostTrail != null)
+                {
+                    Color goldHDR = new Color(2f, 1.5f, 0f);
+                    Color mixed = Color.Lerp(Color.white, goldHDR, 0.5f);
+
+                    float emissionStrength = 1.5f;
+                    Color emissive = mixed * emissionStrength;
+
+                    Color start = emissive;
+                    Color end = emissive;
+
+                    start.a = originalStartAlpha;
+                    end.a = originalEndAlpha;
+
+                    boostTrail.startColor = start;
+                    boostTrail.endColor = end;
+                }
+
+                if (boost != null)
+                {
+                    var emission = boost.emission;
+                    emission.enabled = false;
+                    boost.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                }
+            }
+            else
+            {
+                isSuperSaiyan = false;
+
+                if (superSaiyan != null)
+                    superSaiyan.SetActive(false);
+
+                if (boostTrail != null)
+                {
+                    boostTrail.startColor = originalTrailColor;
+
+                    Color end = originalTrailColor;
+                    end.a = originalEndAlpha;
+                    boostTrail.endColor = end;
+                }
+
+                if (boost != null)
+                {
+                    var emission = boost.emission;
+                    emission.enabled = true;
+                    boost.Play();
                 }
             }
         }
+    }
+
+    void DrainSuperSaiyanKi()
+    {
+        if (!isSuperSaiyan) return;
+
+        currentKi -= superSaiyanDrain * Time.deltaTime;
+
+        if (currentKi <= 0)
+        {
+            currentKi = 0;
+            isSuperSaiyan = false;
+
+            if (superSaiyan != null)
+                superSaiyan.SetActive(false);
+
+            if (boostTrail != null)
+            {
+                boostTrail.startColor = originalTrailColor;
+
+                Color end = originalTrailColor;
+                end.a = originalEndAlpha;
+                boostTrail.endColor = end;
+            }
+
+            if (boost != null)
+                boost.Play();
+        }
+    }
+
+    public static int ApplyDamage(int baseDamage)
+    {
+        return isSuperSaiyan ? (int)(baseDamage * damageMultiplier) : baseDamage;
+    }
+
+    void MeteorStrike()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && !meteorOnCooldown && currentKi >= meteorStrikeCost)
+        {
+            UseKi(meteorStrikeCost);
+            meteorStrike.SetActive(true);
+            meteorStrikeAnim.SetTrigger("Strike");
+            StartCoroutine(MeteorStrikeWait());
+            StartCoroutine(MeteorCooldown());
+        }
+    }
+
+    IEnumerator MeteorStrikeWait()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        effect1.Emit(30);
+        effect2.Play();
+        cam.SetTrigger("Shake");
+
+        Collider[] hits = Physics.OverlapSphere(meteorStrike.transform.position, 2f);
+
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Enemy"))
+            {
+                EnemyHealth eh = hit.GetComponent<EnemyHealth>();
+                if (eh != null)
+                    eh.TakeDamage(ApplyDamage(1000));
+
+                Rigidbody enemyRb = hit.attachedRigidbody ?? hit.GetComponent<Rigidbody>();
+                if (enemyRb != null)
+                {
+                    enemyRb.linearVelocity = Vector3.zero;
+                    enemyRb.AddForce(Vector3.down * 60f, ForceMode.Impulse);
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(0.3f);
+        meteorStrike.SetActive(false);
+    }
+
+    IEnumerator MeteorCooldown()
+    {
+        meteorOnCooldown = true;
+        yield return new WaitForSeconds(meteorCooldown);
+        meteorOnCooldown = false;
     }
 
     void HandleKiBlastInput()
@@ -125,21 +306,13 @@ public class Attacks : MonoBehaviour
         Transform chosenSpawn = null;
 
         if (kiSpawnPointA != null && kiSpawnPointB != null)
-        {
             chosenSpawn = (Random.value < 0.5f) ? kiSpawnPointA : kiSpawnPointB;
-        }
         else if (kiSpawnPoint != null)
-        {
             chosenSpawn = kiSpawnPoint;
-        }
         else if (kiSpawnPointA != null)
-        {
             chosenSpawn = kiSpawnPointA;
-        }
         else if (kiSpawnPointB != null)
-        {
             chosenSpawn = kiSpawnPointB;
-        }
 
         if (chosenSpawn != null)
         {
@@ -254,7 +427,7 @@ public class Attacks : MonoBehaviour
 
         kC.SetActive(true);
         lightning.SetActive(true);
-        
+
         yield return new WaitForSeconds(2f);
 
         extraEffectsAnim.SetTrigger("Fade");
@@ -264,30 +437,15 @@ public class Attacks : MonoBehaviour
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit[] hits = Physics.RaycastAll(ray, range);
 
-        Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 2f);
-
         foreach (RaycastHit hit in hits)
         {
-            Debug.Log("Hit: " + hit.collider.name);
-
             if (hit.collider.CompareTag("Ground"))
             {
-                GameObject effect = Instantiate(
-                    hitEffect,
-                    hit.point,
-                    Quaternion.LookRotation(hit.normal)
-                );
-
-                GameObject effect2 = Instantiate(
-                    kiHitEffect,
-                    hit.point,
-                    Quaternion.LookRotation(hit.normal)
-                );
-
+                GameObject effect = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
+                GameObject effect2 = Instantiate(kiHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
                 Destroy(effect, 3f);
                 Destroy(effect2, 3f);
-
-                break; 
+                break;
             }
         }
 
@@ -300,7 +458,8 @@ public class Attacks : MonoBehaviour
 
         if (movementScript != null)
             movementScript.enabled = true;
-            camController.enabled = false;
+
+        camController.enabled = false;
 
         ResetAttack();
     }
