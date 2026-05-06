@@ -22,10 +22,14 @@ public class Attacks : MonoBehaviour
     public float superSaiyanDrain = 50f;
     public TrailRenderer boostTrail;
     public ParticleSystem boost;
+    public Material hairColour;
 
     private Color originalTrailColor;
     private float originalStartAlpha;
     private float originalEndAlpha;
+
+    private Color originalHairEmissionColor;
+    private bool hairOriginallyHadEmission = false;
 
     public static bool isSuperSaiyan = false;
     public static float damageMultiplier = 1.3f;
@@ -95,6 +99,15 @@ public class Attacks : MonoBehaviour
             originalEndAlpha = boostTrail.endColor.a;
         }
 
+        if (hairColour != null)
+        {
+            hairOriginallyHadEmission = hairColour.IsKeywordEnabled("_EMISSION");
+            if (hairColour.HasProperty("_EmissionColor"))
+                originalHairEmissionColor = hairColour.GetColor("_EmissionColor");
+            else
+                originalHairEmissionColor = Color.black;
+        }
+
         cam.enabled = true;
         camController.enabled = false;
         kC.SetActive(false);
@@ -150,6 +163,18 @@ public class Attacks : MonoBehaviour
             {
                 isSuperSaiyan = true;
 
+                if (hairColour != null)
+                {
+                    Color goldHDR = new Color(2f, 1.5f, 0f);
+                    Color mixed = Color.Lerp(Color.white, goldHDR, 0.5f);
+                    float emissionStrength = 1.5f;
+                    Color emissive = mixed * emissionStrength;
+
+                    hairColour.EnableKeyword("_EMISSION");
+                    if (hairColour.HasProperty("_EmissionColor"))
+                        hairColour.SetColor("_EmissionColor", emissive);
+                }
+
                 if (superSaiyan != null)
                     superSaiyan.SetActive(true);
 
@@ -181,6 +206,15 @@ public class Attacks : MonoBehaviour
             else
             {
                 isSuperSaiyan = false;
+
+                if (hairColour != null)
+                {
+                    if (hairColour.HasProperty("_EmissionColor"))
+                        hairColour.SetColor("_EmissionColor", originalHairEmissionColor);
+
+                    if (!hairOriginallyHadEmission)
+                        hairColour.DisableKeyword("_EMISSION");
+                }
 
                 if (superSaiyan != null)
                     superSaiyan.SetActive(false);
@@ -214,6 +248,15 @@ public class Attacks : MonoBehaviour
         {
             currentKi = 0;
             isSuperSaiyan = false;
+
+            if (hairColour != null)
+            {
+                if (hairColour.HasProperty("_EmissionColor"))
+                    hairColour.SetColor("_EmissionColor", originalHairEmissionColor);
+
+                if (!hairOriginallyHadEmission)
+                    hairColour.DisableKeyword("_EMISSION");
+            }
 
             if (superSaiyan != null)
                 superSaiyan.SetActive(false);
