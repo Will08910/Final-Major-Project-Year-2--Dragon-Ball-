@@ -3,24 +3,23 @@ using UnityEngine;
 public class KamehamehaDamage : MonoBehaviour
 {
     public int damage = 50;
-    public float knockbackForce = 5f;
+
+    public float knockbackForce = 40f;
+
+    public float stunDuration = 2f;
+
     public bool useDamageOverTime = true;
+
     public ParticleSystem hitEffect;
     public ParticleSystem kiHitEffect;
-
-    private bool hasSpawned = false;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Enemy"))
         {
-            ApplyDamage(other);
-            ApplyKnockback(other);
+            ApplyKnockbackAndStun(other);
         }
-
-
     }
-
 
     private void OnTriggerStay(Collider other)
     {
@@ -30,26 +29,46 @@ public class KamehamehaDamage : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // DAMAGE
+    // =========================================================
+
     void ApplyDamage(Collider other)
     {
-        EnemyHealth enemy = other.GetComponent<EnemyHealth>();
+        EnemyHealth enemy =
+            other.GetComponent<EnemyHealth>();
+
         if (enemy != null)
         {
-            int finalDamage = Mathf.RoundToInt(damage * Time.deltaTime * 60f);
+            int finalDamage =
+                Mathf.RoundToInt(
+                    damage * Time.deltaTime * 60f
+                );
+
             enemy.TakeDamage(finalDamage);
         }
     }
 
-    void ApplyKnockback(Collider other)
-    {
-        Rigidbody rb = other.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+    // =========================================================
+    // STUN + KNOCKBACK
+    // =========================================================
 
-            Vector3 direction = -other.transform.forward;
-            rb.AddForce(direction * knockbackForce, ForceMode.Impulse);
+    void ApplyKnockbackAndStun(Collider other)
+    {
+        EnemyState state =
+            other.GetComponent<EnemyState>();
+
+        if (state != null)
+        {
+            state.Stun(stunDuration);
+
+            Vector3 dir =
+                transform.forward.normalized;
+
+            state.ApplyKnockback(
+                dir,
+                knockbackForce
+            );
         }
     }
 }

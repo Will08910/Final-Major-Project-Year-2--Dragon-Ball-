@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class FlyController : MonoBehaviour
 {
+    public EnemyState characterState;
     public float moveSpeed = 10f;
     public float verticalSpeed = 5f;
     float targetFOV;
@@ -22,6 +23,8 @@ public class FlyController : MonoBehaviour
 
     void Start()
     {
+        if (characterState == null)
+            characterState = GetComponent<EnemyState>();
         rb = GetComponent<Rigidbody>();
         boostFly.SetActive(false);
 
@@ -30,7 +33,16 @@ public class FlyController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Acquire input
+        if (rb.linearVelocity.magnitude < 0.1f)
+        {
+            rb.linearVelocity = Vector3.zero;
+        }
+
+        if (characterState != null && characterState.isStunned)
+        {
+            return;
+        }
+
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 

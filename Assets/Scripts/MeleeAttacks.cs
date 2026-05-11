@@ -133,7 +133,6 @@ public class MeleeAttacks : MonoBehaviour
         if (isHeavy)
         {
             ApplyDamage(other, heavyDamage);
-            ApplyKnockback(other, heavyKnockback);
         }
         else
         {
@@ -159,10 +158,40 @@ public class MeleeAttacks : MonoBehaviour
 
     void ApplyDamage(Collider other, int amount)
     {
-        EnemyHealth enemy = other.GetComponent<EnemyHealth>();
-        if (enemy != null)
+        EnemyHealth player =
+            other.GetComponent<EnemyHealth>();
+
+        if (player != null)
         {
-            enemy.TakeDamage(amount);
+            player.TakeDamage(amount);
+        }
+
+        EnemyState state =
+            other.GetComponent<EnemyState>();
+
+        if (state != null)
+        {
+            bool heavyAttack = currentAttackStep == 3;
+
+            if (heavyAttack)
+            {
+                state.Stun(1.2f);
+
+                Vector3 dir =
+                    (other.transform.position - transform.position)
+                    .normalized;
+
+                state.ApplyKnockback(dir, heavyKnockback);
+            }
+            else
+            {
+                state.Stun(0.35f);
+
+                Vector3 dir =
+                    (other.transform.position - transform.position)
+                    .normalized;
+
+            }
         }
     }
 
@@ -173,7 +202,21 @@ public class MeleeAttacks : MonoBehaviour
         {
             Vector3 direction = (other.transform.position - transform.position).normalized;
             rb.AddForce(direction * force, ForceMode.Impulse);
+
+            EnemyState state = other.GetComponent<EnemyState>();
+
+            if (state != null)
+            {
+                state.Stun(1.2f);
+            }
         }
     }
 
+    public void TriggerAttack()
+    {
+        if (!isAttacking && !comboOnCooldown)
+        {
+            StartCoroutine(AttackRoutine());
+        }
+    }
 }

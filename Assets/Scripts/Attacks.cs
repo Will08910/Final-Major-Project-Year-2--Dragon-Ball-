@@ -310,6 +310,13 @@ public class Attacks : MonoBehaviour
                 if (eh != null)
                     eh.TakeDamage(ApplyDamage(1000));
 
+                EnemyState state = hit.GetComponent<EnemyState>();
+
+                if (state != null)
+                {
+                    state.Stun(1.5f);
+                }
+
                 Rigidbody enemyRb = hit.attachedRigidbody ?? hit.GetComponent<Rigidbody>();
                 if (enemyRb != null)
                 {
@@ -340,7 +347,7 @@ public class Attacks : MonoBehaviour
         }
     }
 
-    void SpawnKiBlast()
+    public void SpawnKiBlast()
     {
         Camera camRef = Camera.main;
         Vector3 spawnPos;
