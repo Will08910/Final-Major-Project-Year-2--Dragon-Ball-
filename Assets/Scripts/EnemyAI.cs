@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class EnemyAI : MonoBehaviour
     public EnemyMeleeAttacks melee;
     public EnemyHealth health;
     public EnemyState enemyState;
+    public Slider healthSlider;
 
     [Header("Movement")]
     public float moveSpeed = 20f;
@@ -487,23 +489,11 @@ public class EnemyAI : MonoBehaviour
 
     void HandleTransformation()
     {
-        if (!canTransform)
-            return;
+        print("Checking transformation conditions");
 
-        if (attacks == null)
-            return;
-
-        if (attacks.isSuperSaiyan)
-            return;
-
-        if (health == null)
-            return;
-
-        float currentHealthPercent =
-            health.currentHealth / health.maxHealth;
-
-        if (currentHealthPercent <= transformHealthThreshold)
+        if (healthSlider.value < 4000)
         {
+            print("works");
             attacks.TransformSuperSaiyan();
         }
     }

@@ -7,6 +7,7 @@ public class EnemyAttacks : MonoBehaviour
     [Header("References")]
     public Transform player;
     public Rigidbody rb;
+    public EnemyAI ai;
 
     [Header("UI")]
     public Slider kiBar;
@@ -61,6 +62,9 @@ public class EnemyAttacks : MonoBehaviour
 
     void Start()
     {
+        if (ai == null)
+            ai = GetComponent<EnemyAI>();
+
         if (rb == null)
             rb = GetComponent<Rigidbody>();
 
@@ -263,6 +267,8 @@ public class EnemyAttacks : MonoBehaviour
 
     public void TransformSuperSaiyan()
     {
+        print("transform runs");
+
         if (isSuperSaiyan)
             return;
 
@@ -271,8 +277,7 @@ public class EnemyAttacks : MonoBehaviour
 
         isSuperSaiyan = true;
 
-        if (superSaiyan != null)
-            superSaiyan.SetActive(true);
+        superSaiyan.SetActive(true);
     }
 
     public void UseMeteorStrike()

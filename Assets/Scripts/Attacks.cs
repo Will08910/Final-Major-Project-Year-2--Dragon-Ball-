@@ -432,7 +432,7 @@ public class Attacks : MonoBehaviour
 
         if (isCharging)
         {
-            currentKi += chargeValue * Time.deltaTime * 100f;
+            currentKi += chargeValue * Time.deltaTime * 150f;
             currentKi = Mathf.Clamp(currentKi, 0, maxKi);
         }
     }
