@@ -25,11 +25,12 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _EMISSION
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords:
   - _ALPHABLEND_ON
   - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 0
+  m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
@@ -151,12 +152,12 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.7490197, g: 0.7490197, b: 0.7490197, a: 1}
+    - _BaseColor: {r: 0.32941177, g: 0.9960785, b: 0.9960785, a: 1}
     - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 0.7490197, g: 0.7490197, b: 0.7490197, a: 1}
+    - _Color: {r: 0.32941175, g: 0.99607843, b: 0.99607843, a: 1}
     - _ColorAddSubDiff: {r: -1, g: 0, b: 0, a: 0}
-    - _EmissionColor: {r: 0.6623411, g: 1.8068681, b: 1.9766748, a: 1}
+    - _EmissionColor: {r: 0.17671224, g: 2.4975333, b: 2.4842718, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []

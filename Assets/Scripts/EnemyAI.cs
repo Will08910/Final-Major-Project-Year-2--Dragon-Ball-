@@ -232,7 +232,7 @@ public class EnemyAI : MonoBehaviour
             if (aggressiveMode)
             {
                 if (
-                    random < 0.04f &&
+                    random < 0.06f &&
                     attacks.currentKi >= 2000
                 )
                 {
@@ -266,7 +266,7 @@ public class EnemyAI : MonoBehaviour
             else
             {
                 if (
-                    random < 0.04f &&
+                    random < 0.06f &&
                     attacks.currentKi >= 2000
                 )
                 {
@@ -311,7 +311,7 @@ public class EnemyAI : MonoBehaviour
                 StartCoroutine(KiBlastBurst());
             }
 
-            if (random < 0.04f)
+            if (random < 0.06f)
             {
                 attacks.UseKamehameha();
                 return;
