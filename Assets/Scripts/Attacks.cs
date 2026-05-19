@@ -46,6 +46,8 @@ public class Attacks : MonoBehaviour
 
     public MonoBehaviour movementScript;
 
+    public EnemyState characterState;
+
     [Header("Ki Charge")]
     public GameObject chargeKi;
     public Animator kiCharge;
@@ -119,15 +121,24 @@ public class Attacks : MonoBehaviour
         currentKi = maxKi;
         kiBar.value = currentKi;
         easeKiBar.value = currentKi;
+
+        if (characterState == null)
+            characterState = GetComponent<EnemyState>();
     }
 
     void Update()
     {
-        MeteorStrike();
-        HandleCharge();
-        HandleKamehameha();
-        HandleKiBlastInput();
-        HandleSuperSaiyan();
+        bool isStunned = characterState != null && characterState.isStunned;
+
+        if (!isStunned)
+        {
+            MeteorStrike();
+            HandleCharge();
+            HandleKamehameha();
+            HandleKiBlastInput();
+            HandleSuperSaiyan();
+        }
+
         DrainSuperSaiyanKi();
 
         if (isSuperSaiyan && boost != null)

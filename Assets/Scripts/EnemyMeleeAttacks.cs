@@ -167,5 +167,28 @@ public class EnemyMeleeAttacks : MonoBehaviour
         {
             player.TakeDamage(amount);
         }
+
+        EnemyState state =
+            other.GetComponent<EnemyState>();
+
+        if (state != null)
+        {
+            bool heavyAttack = currentAttackStep == 3;
+
+            if (heavyAttack)
+            {
+                state.Stun(1.2f);
+
+                Vector3 dir =
+                    (other.transform.position - transform.position)
+                    .normalized;
+
+                state.ApplyKnockback(dir, heavyKnockback);
+            }
+            else
+            {
+                state.Stun(0.35f);
+            }
+        }
     }
 }

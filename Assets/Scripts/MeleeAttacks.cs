@@ -37,6 +37,9 @@ public class MeleeAttacks : MonoBehaviour
     private Dictionary<int, List<MonoBehaviour>> disabledBehaviours = new Dictionary<int, List<MonoBehaviour>>();
     private Dictionary<int, bool> disabledCharacterController = new Dictionary<int, bool>();
 
+    // NEW: block melee when player is stunned
+    public EnemyState characterState;
+
     void Start()
     {
         if (hitbox == null)
@@ -51,10 +54,17 @@ public class MeleeAttacks : MonoBehaviour
         {
             Debug.LogWarning("MeleeAttacks: No hitbox Collider assigned or found. Assign a trigger collider for the weapon.");
         }
+
+        if (characterState == null)
+            characterState = GetComponent<EnemyState>();
     }
 
     void Update()
     {
+        // Do not allow starting attacks while stunned
+        if (characterState != null && characterState.isStunned)
+            return;
+
         if (Time.time - lastAttackTime > comboResetTime)
             comboIndex = 0;
 
@@ -214,6 +224,10 @@ public class MeleeAttacks : MonoBehaviour
 
     public void TriggerAttack()
     {
+        // Block triggers when stunned
+        if (characterState != null && characterState.isStunned)
+            return;
+
         if (!isAttacking && !comboOnCooldown)
         {
             StartCoroutine(AttackRoutine());

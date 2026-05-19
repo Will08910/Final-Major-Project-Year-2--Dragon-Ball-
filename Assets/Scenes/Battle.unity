@@ -66762,6 +66762,7 @@ MonoBehaviour:
   hitEffect2: {fileID: 1411896993}
   camShake: {fileID: 2046501508}
   comboCooldown: 1.5
+  characterState: {fileID: 1348088264}
 --- !u!65 &535578547
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -104832,7 +104833,7 @@ MonoBehaviour:
   rb: {fileID: 1150576064}
   attacks: {fileID: 1150576073}
   melee: {fileID: 1150576072}
-  health: {fileID: 0}
+  health: {fileID: 1150576065}
   enemyState: {fileID: 1150576074}
   healthSlider: {fileID: 1171987328}
   moveSpeed: 20
@@ -104882,7 +104883,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMeleeAttacks
   normalDamage: 100
   heavyDamage: 200
-  heavyKnockback: 12
+  heavyKnockback: 30
   hitbox: {fileID: 1150576070}
   attackDuration: 0.15
   attackCooldown: 0.15
@@ -115450,6 +115451,7 @@ GameObject:
   - component: {fileID: 1348088257}
   - component: {fileID: 1348088256}
   - component: {fileID: 1348088255}
+  - component: {fileID: 1348088264}
   m_Layer: 0
   m_Name: Gohan
   m_TagString: Player
@@ -115521,6 +115523,7 @@ MonoBehaviour:
   kiBar: {fileID: 894773743}
   easeKiBar: {fileID: 680999821}
   movementScript: {fileID: 1348088258}
+  characterState: {fileID: 1348088264}
   chargeKi: {fileID: 292695186}
   kiCharge: {fileID: 292695187}
   chargeCooldown: 2.35
@@ -115553,7 +115556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed7f7447de7ab2f4b91924686e5f6f47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  characterState: {fileID: 0}
+  characterState: {fileID: 1348088264}
   moveSpeed: 35
   verticalSpeed: 30
   boostFly: {fileID: 2062990972}
@@ -115696,6 +115699,19 @@ Transform:
   - {fileID: 1750901038}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1348088264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348088254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11a0c15a331bed04fabef20d411b87b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyState
+  isStunned: 0
 --- !u!1 &1351857747
 GameObject:
   m_ObjectHideFlags: 0
@@ -145430,7 +145446,7 @@ Transform:
   m_GameObject: {fileID: 1524719070}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -421.52, y: 42.2, z: 31.3}
+  m_LocalPosition: {x: -421.52, y: 27.9, z: 31.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -145449,7 +145465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73767763f496a5e4ab8b0cb20224c6d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  player: {fileID: 1587452011}
+  player: {fileID: 1348088263}
   yOffset: 25
   smooth: 1
   followSpeed: 10

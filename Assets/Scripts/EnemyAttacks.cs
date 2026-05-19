@@ -339,6 +339,13 @@ public class EnemyAttacks : MonoBehaviour
                     ph.TakeDamage(damage);
                 }
 
+                // Attempt to stun player
+                EnemyState playerState = hit.GetComponent<EnemyState>();
+                if (playerState != null)
+                {
+                    playerState.Stun(1.2f);
+                }
+
                 Rigidbody playerRb =
                     hit.attachedRigidbody;
 
@@ -425,6 +432,12 @@ public class EnemyAttacks : MonoBehaviour
                         : 500;
 
                     ph.TakeDamage(damage);
+                }
+
+                EnemyState playerState = hit.collider.GetComponent<EnemyState>();
+                if (playerState != null)
+                {
+                    playerState.Stun(1.5f);
                 }
             }
         }
