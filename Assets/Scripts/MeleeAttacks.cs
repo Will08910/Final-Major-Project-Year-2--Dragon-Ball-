@@ -14,7 +14,7 @@ public class MeleeAttacks : MonoBehaviour
     public Collider hitbox;
     public float attackDuration = 0.15f;
     public float attackCooldown = 0.15f;
-    public float comboResetTime = 1.0f; 
+    public float comboResetTime = 1.0f;
     public ParticleSystem hitEffect;
     public ParticleSystem hitEffect2;
 
@@ -24,20 +24,19 @@ public class MeleeAttacks : MonoBehaviour
     [Header("Combo Cooldown")]
     public float comboCooldown = 1.5f;
 
+    [Header("Audio")]
+    public AudioSource attackSound;
+    public AudioClip[] attackSounds; // 0-3 = combo attacks
+
     private bool isAttacking = false;
     private bool comboOnCooldown = false;
+
     private HashSet<int> hitEnemies = new HashSet<int>();
+
     private int comboIndex = 0;
     private float lastAttackTime = -10f;
     private int currentAttackStep = -1;
 
-    private Dictionary<int, Coroutine> stunCoroutines = new Dictionary<int, Coroutine>();
-    private Dictionary<int, RigidbodyConstraints> originalConstraints = new Dictionary<int, RigidbodyConstraints>();
-    private Dictionary<int, bool> originalKinematic = new Dictionary<int, bool>();
-    private Dictionary<int, List<MonoBehaviour>> disabledBehaviours = new Dictionary<int, List<MonoBehaviour>>();
-    private Dictionary<int, bool> disabledCharacterController = new Dictionary<int, bool>();
-
-    // NEW: block melee when player is stunned
     public EnemyState characterState;
 
     void Start()
@@ -52,7 +51,9 @@ public class MeleeAttacks : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("MeleeAttacks: No hitbox Collider assigned or found. Assign a trigger collider for the weapon.");
+            Debug.LogWarning(
+                "MeleeAttacks: No hitbox Collider assigned or found."
+            );
         }
 
         if (characterState == null)
@@ -61,7 +62,6 @@ public class MeleeAttacks : MonoBehaviour
 
     void Update()
     {
-        // Do not allow starting attacks while stunned
         if (characterState != null && characterState.isStunned)
             return;
 
@@ -87,6 +87,7 @@ public class MeleeAttacks : MonoBehaviour
     private IEnumerator AttackRoutine()
     {
         isAttacking = true;
+
         hitEnemies.Clear();
 
         int attackStep = comboIndex;
@@ -112,6 +113,7 @@ public class MeleeAttacks : MonoBehaviour
         isAttacking = false;
         currentAttackStep = -1;
 
+        // Heavy finisher cooldown
         if (attackStep == 3)
             StartCoroutine(ComboCooldownCoroutine());
     }
@@ -119,7 +121,9 @@ public class MeleeAttacks : MonoBehaviour
     private IEnumerator ComboCooldownCoroutine()
     {
         comboOnCooldown = true;
+
         yield return new WaitForSeconds(comboCooldown);
+
         comboOnCooldown = false;
         comboIndex = 0;
     }
@@ -133,10 +137,21 @@ public class MeleeAttacks : MonoBehaviour
             return;
 
         int id = other.gameObject.GetInstanceID();
+
         if (hitEnemies.Contains(id))
             return;
 
         hitEnemies.Add(id);
+
+        // PLAY HIT SOUND ONLY WHEN ENEMY IS HIT
+        if (attackSound != null &&
+            currentAttackStep >= 0 &&
+            currentAttackStep < attackSounds.Length)
+        {
+            attackSound.PlayOneShot(
+                attackSounds[currentAttackStep]
+            );
+        }
 
         bool isHeavy = currentAttackStep == 3;
 
@@ -146,7 +161,10 @@ public class MeleeAttacks : MonoBehaviour
         }
         else
         {
-            Rigidbody rb = other.attachedRigidbody ?? other.GetComponent<Rigidbody>();
+            Rigidbody rb =
+                other.attachedRigidbody ??
+                other.GetComponent<Rigidbody>();
+
             if (rb != null)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -168,12 +186,12 @@ public class MeleeAttacks : MonoBehaviour
 
     void ApplyDamage(Collider other, int amount)
     {
-        EnemyHealth player =
+        EnemyHealth enemy =
             other.GetComponent<EnemyHealth>();
 
-        if (player != null)
+        if (enemy != null)
         {
-            player.TakeDamage(amount);
+            enemy.TakeDamage(amount);
         }
 
         EnemyState state =
@@ -181,39 +199,44 @@ public class MeleeAttacks : MonoBehaviour
 
         if (state != null)
         {
-            bool heavyAttack = currentAttackStep == 3;
+            bool heavyAttack =
+                currentAttackStep == 3;
+
+            Vector3 dir =
+                (other.transform.position -
+                 transform.position).normalized;
 
             if (heavyAttack)
             {
                 state.Stun(1.2f);
-
-                Vector3 dir =
-                    (other.transform.position - transform.position)
-                    .normalized;
-
                 state.ApplyKnockback(dir, heavyKnockback);
             }
             else
             {
                 state.Stun(0.35f);
-
-                Vector3 dir =
-                    (other.transform.position - transform.position)
-                    .normalized;
-
             }
         }
     }
 
     void ApplyKnockback(Collider other, float force)
     {
-        Rigidbody rb = other.attachedRigidbody ?? other.GetComponent<Rigidbody>();
+        Rigidbody rb =
+            other.attachedRigidbody ??
+            other.GetComponent<Rigidbody>();
+
         if (rb != null)
         {
-            Vector3 direction = (other.transform.position - transform.position).normalized;
-            rb.AddForce(direction * force, ForceMode.Impulse);
+            Vector3 direction =
+                (other.transform.position -
+                 transform.position).normalized;
 
-            EnemyState state = other.GetComponent<EnemyState>();
+            rb.AddForce(
+                direction * force,
+                ForceMode.Impulse
+            );
+
+            EnemyState state =
+                other.GetComponent<EnemyState>();
 
             if (state != null)
             {
@@ -224,8 +247,9 @@ public class MeleeAttacks : MonoBehaviour
 
     public void TriggerAttack()
     {
-        // Block triggers when stunned
-        if (characterState != null && characterState.isStunned)
+        // Block attacks when stunned
+        if (characterState != null &&
+            characterState.isStunned)
             return;
 
         if (!isAttacking && !comboOnCooldown)

@@ -36,6 +36,10 @@ public class BeamClashManager : MonoBehaviour
 
     public GameObject clashEnemy;
 
+    [Header("Damage")]
+    [Tooltip("Damage dealt to the losing participant when the clash ends.")]
+    public int lossDamage = 500;
+
     private int currentClicks;
 
     private bool clashRunning;
@@ -47,6 +51,15 @@ public class BeamClashManager : MonoBehaviour
 
     public void StartBeamClash()
     {
+
+        StopAllCoroutines();
+
+        if (animator != null)
+        {
+            animator.SetBool("Win", false);
+            animator.SetBool("Lose", false);
+        }
+
         gameObject.SetActive(true);
 
         playerWon = false;
@@ -187,9 +200,41 @@ public class BeamClashManager : MonoBehaviour
 
     void EndClash()
     {
+
+        StopAllCoroutines();
+        clashRunning = false;
+
+
         foreach (Transform child in buttonContainer)
         {
-            Destroy(child.gameObject);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
+
+
+        if (playerWon)
+        {
+            if (currentEnemy != null)
+            {
+                EnemyHealth eh = currentEnemy.GetComponent<EnemyHealth>();
+                if (eh != null)
+                {
+                    eh.TakeDamage(lossDamage);
+                }
+            }
+        }
+        else
+        {
+            if (currentPlayer != null)
+            {
+                EnemyHealth ph = currentPlayer.GetComponent<EnemyHealth>();
+                if (ph != null)
+                {
+                    ph.TakeDamage(lossDamage);
+                }
+            }
         }
 
         ToggleGameplayCharacter(
@@ -234,6 +279,13 @@ public class BeamClashManager : MonoBehaviour
                 playerAttacks.kCB.SetActive(false);
 
             playerAttacks.enabled = true;
+        }
+
+
+        if (animator != null)
+        {
+            animator.SetBool("Win", false);
+            animator.SetBool("Lose", false);
         }
 
         gameObject.SetActive(false);

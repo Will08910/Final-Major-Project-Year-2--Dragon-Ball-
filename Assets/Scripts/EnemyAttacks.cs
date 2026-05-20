@@ -437,7 +437,7 @@ public class EnemyAttacks : MonoBehaviour
                 EnemyState playerState = hit.collider.GetComponent<EnemyState>();
                 if (playerState != null)
                 {
-                    playerState.Stun(1.5f);
+                    playerState.Stun(3f);
                 }
             }
         }

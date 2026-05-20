@@ -16,6 +16,7 @@ public class Attacks : MonoBehaviour
     public ParticleSystem effect2;
     public int meteorStrikeCost = 400;
     public float meteorCooldown = 4f;
+    public AudioSource meteorSound;
 
     [Header("Super Saiyan")]
     public GameObject superSaiyan;
@@ -76,6 +77,8 @@ public class Attacks : MonoBehaviour
     public float kiBlastLifetime = 8f;
     public float kiBlastCooldown = 0.5f;
     public int kiBlastCost = 50;
+
+    public AudioSource kiBlastSound;
 
     private bool kiBlastOnCooldown = false;
     private bool meteorOnCooldown = false;
@@ -298,6 +301,7 @@ public class Attacks : MonoBehaviour
             UseKi(meteorStrikeCost);
             meteorStrike.SetActive(true);
             meteorStrikeAnim.SetTrigger("Strike");
+            meteorSound.Play();
             StartCoroutine(MeteorStrikeWait());
             StartCoroutine(MeteorCooldown());
         }
@@ -354,6 +358,7 @@ public class Attacks : MonoBehaviour
         {
             UseKi(kiBlastCost);
             SpawnKiBlast();
+            kiBlastSound.Play();
             StartCoroutine(KiBlastCooldownCoroutine());
         }
     }
