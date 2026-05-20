@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -51,6 +52,8 @@ public class EnemyAttacks : MonoBehaviour
     [Header("Kamehameha")]
     public GameObject kC;
     public GameObject kCB;
+    public AudioSource chargeBeam;
+    public AudioSource Fire;
 
     [Header("Transformation")]
     public GameObject superSaiyan;
@@ -342,8 +345,9 @@ public class EnemyAttacks : MonoBehaviour
                     ph.TakeDamage(damage);
                 }
 
-                // Attempt to stun player
-                EnemyState playerState = hit.GetComponent<EnemyState>();
+                EnemyState playerState =
+                    hit.GetComponent<EnemyState>();
+
                 if (playerState != null)
                 {
                     playerState.Stun(1.2f);
@@ -410,6 +414,9 @@ public class EnemyAttacks : MonoBehaviour
         if (kCB != null)
             kCB.SetActive(true);
 
+        chargeBeam.Stop();
+        Fire.Play();
+
         float duration = 3f;
         float tickRate = 0.15f;
         float timer = 0f;
@@ -449,6 +456,23 @@ public class EnemyAttacks : MonoBehaviour
                     if (playerState != null)
                     {
                         playerState.Stun(0.2f);
+                    }
+
+                    Rigidbody playerRb =
+                        hit.collider.attachedRigidbody;
+
+                    if (playerRb != null)
+                    {
+                        playerRb.linearVelocity = Vector3.zero;
+                        playerRb.angularVelocity = Vector3.zero;
+
+                        Vector3 knockbackDirection =
+                            transform.forward.normalized;
+
+                        playerRb.AddForce(
+                            knockbackDirection * 35f,
+                            ForceMode.Impulse
+                        );
                     }
                 }
             }

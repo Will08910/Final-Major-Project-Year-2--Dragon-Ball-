@@ -425,9 +425,12 @@ public class Attacks : MonoBehaviour
 
     void HandleCharge()
     {
-        if (Input.GetKeyDown(KeyCode.C) && !isFiring && !isCharging && !chargeOnCooldown && (rb == null || rb.linearVelocity.magnitude == 0f))
+        if (Input.GetKeyDown(KeyCode.C) && !isFiring && !isCharging && !chargeOnCooldown)
         {
             isCharging = true;
+
+            if (movementScript != null)
+                movementScript.enabled = false;
 
             if (rb != null)
             {
@@ -441,12 +444,22 @@ public class Attacks : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.C) && isCharging)
         {
             isCharging = false;
+
+            if (movementScript != null)
+                movementScript.enabled = true;
+
             StartCoroutine(KiFade());
             StartCoroutine(ChargeCooldownCoroutine());
         }
 
         if (isCharging)
         {
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
             currentKi += chargeValue * Time.deltaTime * 150f;
             currentKi = Mathf.Clamp(currentKi, 0, maxKi);
         }
@@ -495,6 +508,8 @@ public class Attacks : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
+        chargeSound.Stop();
+        fireSound.Play();
         extraEffectsAnim.SetTrigger("Fade");
         canvas1.SetActive(true);
         kCB.SetActive(true);
@@ -517,7 +532,6 @@ public class Attacks : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
         lightning.SetActive(false);
-        
         kC.SetActive(false);
         canvas1.SetActive(false);
         kCB.SetActive(false);

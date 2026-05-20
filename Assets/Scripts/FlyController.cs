@@ -16,6 +16,7 @@ public class FlyController : MonoBehaviour
     public float boostKiDrainPerSecond = 100f;
 
     private Rigidbody rb;
+    public AudioSource boostSound;
 
     [Tooltip("Optional: explicit enemy to move toward. If null the script will search for the closest enemy.")]
     public Transform enemyTarget;
@@ -138,11 +139,13 @@ public class FlyController : MonoBehaviour
         {
             boostFlyFade.SetBool("Fade", false);
             boostFly.SetActive(true);
+            boostSound.Play();
         }
 
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             StartCoroutine(FadeTrail());
+            boostSound.Stop();
         }
 
         if (attacksScript != null && attacksScript.currentKi <= 0f && boostFly.activeSelf)
