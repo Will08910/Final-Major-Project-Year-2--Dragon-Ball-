@@ -6,19 +6,14 @@ public class BeamClashManager : MonoBehaviour
 {
     [Header("UI")]
     public RectTransform buttonContainer;
-
     public GameObject clashButtonPrefab;
-
     public TMP_Text timerText;
     public TMP_Text scoreText;
 
     [Header("Settings")]
     public float clashDuration = 6f;
-
     public float aftermathDuration = 3f;
-
     public float spawnRate = 0.2f;
-
     public int clicksNeededToWin = 20;
 
     [Header("Animator")]
@@ -29,29 +24,34 @@ public class BeamClashManager : MonoBehaviour
 
     [Header("Cutscene Objects")]
     public GameObject currentPlayer;
-
     public GameObject currentEnemy;
-
     public GameObject clashPlayer;
-
     public GameObject clashEnemy;
 
     [Header("Damage")]
-    [Tooltip("Damage dealt to the losing participant when the clash ends.")]
     public int lossDamage = 500;
 
-    private int currentClicks;
+    [Header("Combat Scripts")]
+    public MonoBehaviour[] playerCombatScripts;
+    public MonoBehaviour[] enemyCombatScripts;
 
+    private int currentClicks;
     private bool clashRunning;
+
+    public GameObject A17;
 
     void Start()
     {
         gameObject.SetActive(false);
     }
 
+    private void Update()
+    {
+        A17.SetActive(true);
+    }
+
     public void StartBeamClash()
     {
-
         StopAllCoroutines();
 
         if (animator != null)
@@ -63,26 +63,34 @@ public class BeamClashManager : MonoBehaviour
         gameObject.SetActive(true);
 
         playerWon = false;
-
         currentClicks = 0;
-
         clashRunning = true;
 
-        ToggleGameplayCharacter(
-            currentPlayer,
-            true
-        );
+        foreach (MonoBehaviour script in playerCombatScripts)
+        {
+            if (script != null)
+                if(clashRunning == true)
+                    script.enabled = false;
+        }
 
-        ToggleGameplayCharacter(
-            currentEnemy,
-            true
-        );
+        foreach (MonoBehaviour script in enemyCombatScripts)
+        {
+            if (script != null)
+                if (clashRunning == true)
+                    script.enabled = false;
+        }
 
         if (clashPlayer != null)
+        {
+            clashPlayer.SetActive(false);
             clashPlayer.SetActive(true);
+        }
 
         if (clashEnemy != null)
+        {
+            clashEnemy.SetActive(false);
             clashEnemy.SetActive(true);
+        }
 
         StartCoroutine(ClashRoutine());
         StartCoroutine(SpawnButtonsRoutine());
@@ -114,15 +122,8 @@ public class BeamClashManager : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetBool(
-                "Win",
-                playerWon
-            );
-
-            animator.SetBool(
-                "Lose",
-                !playerWon
-            );
+            animator.SetBool("Win", playerWon);
+            animator.SetBool("Lose", !playerWon);
         }
 
         yield return new WaitForSeconds(
@@ -200,10 +201,9 @@ public class BeamClashManager : MonoBehaviour
 
     void EndClash()
     {
-
         StopAllCoroutines();
-        clashRunning = false;
 
+        clashRunning = false;
 
         foreach (Transform child in buttonContainer)
         {
@@ -213,12 +213,13 @@ public class BeamClashManager : MonoBehaviour
                 DestroyImmediate(child.gameObject);
         }
 
-
         if (playerWon)
         {
             if (currentEnemy != null)
             {
-                EnemyHealth eh = currentEnemy.GetComponent<EnemyHealth>();
+                EnemyHealth eh =
+                    currentEnemy.GetComponent<EnemyHealth>();
+
                 if (eh != null)
                 {
                     eh.TakeDamage(lossDamage);
@@ -229,7 +230,9 @@ public class BeamClashManager : MonoBehaviour
         {
             if (currentPlayer != null)
             {
-                EnemyHealth ph = currentPlayer.GetComponent<EnemyHealth>();
+                EnemyHealth ph =
+                    currentPlayer.GetComponent<EnemyHealth>();
+
                 if (ph != null)
                 {
                     ph.TakeDamage(lossDamage);
@@ -237,50 +240,11 @@ public class BeamClashManager : MonoBehaviour
             }
         }
 
-        ToggleGameplayCharacter(
-            currentPlayer,
-            true
-        );
-
-        ToggleGameplayCharacter(
-            currentEnemy,
-            true
-        );
-
         if (clashPlayer != null)
             clashPlayer.SetActive(false);
 
         if (clashEnemy != null)
             clashEnemy.SetActive(false);
-
-        EnemyAttacks enemyAttacks =
-    currentEnemy.GetComponent<EnemyAttacks>();
-
-        if (enemyAttacks != null)
-        {
-            if (enemyAttacks.kC != null)
-                enemyAttacks.kC.SetActive(false);
-
-            if (enemyAttacks.kCB != null)
-                enemyAttacks.kCB.SetActive(false);
-
-            enemyAttacks.isFiring = false;
-        }
-
-        Attacks playerAttacks =
-    currentPlayer.GetComponent<Attacks>();
-
-        if (playerAttacks != null)
-        {
-            if (playerAttacks.kC != null)
-                playerAttacks.kC.SetActive(false);
-
-            if (playerAttacks.kCB != null)
-                playerAttacks.kCB.SetActive(false);
-
-            playerAttacks.enabled = true;
-        }
-
 
         if (animator != null)
         {
@@ -288,57 +252,37 @@ public class BeamClashManager : MonoBehaviour
             animator.SetBool("Lose", false);
         }
 
+        foreach (MonoBehaviour script in playerCombatScripts)
+        {
+            if (clashRunning == false)
+                script.enabled = true;
+        }
+
+        foreach (MonoBehaviour script in enemyCombatScripts)
+        {
+            if (clashRunning == false)
+                script.enabled = true;
+        }
+
+        StartCoroutine(DelayCutscene());
+
         gameObject.SetActive(false);
     }
 
-    void ToggleGameplayCharacter(
-    GameObject obj,
-    bool enabledState
-)
+    IEnumerator DelayCutscene()
     {
-        if (obj == null)
-            return;
+        yield return new WaitForSeconds(4f);
 
-        Renderer[] renderers =
-            obj.GetComponentsInChildren<Renderer>();
-
-        foreach (Renderer r in renderers)
+        foreach (MonoBehaviour script in playerCombatScripts)
         {
-            r.enabled = enabledState;
+                if (clashRunning == false)
+                    script.enabled = true;
         }
 
-        Collider[] colliders =
-            obj.GetComponentsInChildren<Collider>();
-
-        foreach (Collider c in colliders)
+        foreach (MonoBehaviour script in enemyCombatScripts)
         {
-            c.enabled = enabledState;
-        }
-
-        MonoBehaviour[] scripts =
-            obj.GetComponentsInChildren<MonoBehaviour>();
-
-        foreach (MonoBehaviour script in scripts)
-        {
-            if (
-                script is BeamClashTrigger ||
-                script is BeamClashManager
-            )
-            {
-                continue;
-            }
-
-            script.enabled = enabledState;
-        }
-
-        Rigidbody rb =
-            obj.GetComponent<Rigidbody>();
-
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+                if (clashRunning == false)
+                    script.enabled = true;
         }
     }
-
 }

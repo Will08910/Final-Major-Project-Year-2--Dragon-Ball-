@@ -104444,6 +104444,14 @@ MonoBehaviour:
   clashPlayer: {fileID: 799818121}
   clashEnemy: {fileID: 1858529742}
   lossDamage: 3000
+  playerCombatScripts:
+  - {fileID: 1348088257}
+  - {fileID: 535578546}
+  enemyCombatScripts:
+  - {fileID: 1150576073}
+  - {fileID: 1150576072}
+  - {fileID: 1150576069}
+  A17: {fileID: 718575513}
 --- !u!114 &1062968455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105131,12 +105139,12 @@ GameObject:
   - component: {fileID: 1150576068}
   - component: {fileID: 1150576067}
   - component: {fileID: 1150576066}
+  - component: {fileID: 1150576069}
+  - component: {fileID: 1150576072}
+  - component: {fileID: 1150576073}
   - component: {fileID: 1150576065}
   - component: {fileID: 1150576064}
   - component: {fileID: 1150576063}
-  - component: {fileID: 1150576069}
-  - component: {fileID: 1150576073}
-  - component: {fileID: 1150576072}
   - component: {fileID: 1150576070}
   - component: {fileID: 1150576074}
   m_Layer: 0
@@ -115937,8 +115945,8 @@ GameObject:
   - component: {fileID: 1348088261}
   - component: {fileID: 1348088260}
   - component: {fileID: 1348088259}
-  - component: {fileID: 1348088258}
   - component: {fileID: 1348088257}
+  - component: {fileID: 1348088258}
   - component: {fileID: 1348088256}
   - component: {fileID: 1348088255}
   - component: {fileID: 1348088264}
