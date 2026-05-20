@@ -25,6 +25,10 @@ public class EnemyMeleeAttacks : MonoBehaviour
     [Header("Combo Cooldown")]
     public float comboCooldown = 1.5f;
 
+    [Header("Audio")]
+    public AudioSource attackSound;
+    public AudioClip[] attackSounds;
+
     private bool isAttacking = false;
     private bool comboOnCooldown = false;
 
@@ -136,6 +140,15 @@ public class EnemyMeleeAttacks : MonoBehaviour
             return;
 
         hitPlayers.Add(id);
+
+        if (attackSound != null &&
+            currentAttackStep >= 0 &&
+            currentAttackStep < attackSounds.Length)
+        {
+            attackSound.PlayOneShot(
+                attackSounds[currentAttackStep]
+            );
+        }
 
         bool isHeavy = currentAttackStep == 3;
 

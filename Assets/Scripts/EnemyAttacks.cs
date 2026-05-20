@@ -43,6 +43,8 @@ public class EnemyAttacks : MonoBehaviour
     public ParticleSystem effect1;
     public ParticleSystem effect2;
 
+    public AudioSource meteorSound;
+
     public int meteorStrikeCost = 400;
     public float meteorCooldown = 4f;
 
@@ -298,6 +300,7 @@ public class EnemyAttacks : MonoBehaviour
     IEnumerator MeteorStrikeRoutine()
     {
         meteorOnCooldown = true;
+        meteorSound.Play();
 
         if (meteorStrike != null)
             meteorStrike.SetActive(true);
@@ -407,42 +410,53 @@ public class EnemyAttacks : MonoBehaviour
         if (kCB != null)
             kCB.SetActive(true);
 
-        RaycastHit[] hits =
-            Physics.RaycastAll(
-                transform.position,
-                transform.forward,
-                range
-            );
+        float duration = 3f;
+        float tickRate = 0.15f;
+        float timer = 0f;
 
-        foreach (RaycastHit hit in hits)
+        while (timer < duration)
         {
-            if (hit.collider.CompareTag("Player"))
+            RaycastHit[] hits =
+                Physics.RaycastAll(
+                    transform.position,
+                    transform.forward,
+                    range
+                );
+
+            foreach (RaycastHit hit in hits)
             {
-                EnemyHealth ph =
-                    hit.collider.GetComponent<EnemyHealth>();
-
-                if (ph != null)
+                if (hit.collider.CompareTag("Player"))
                 {
-                    int damage =
-                        isSuperSaiyan
-                        ? Mathf.RoundToInt(
-                            500 *
-                            damageMultiplier
-                          )
-                        : 500;
+                    EnemyHealth ph =
+                        hit.collider.GetComponent<EnemyHealth>();
 
-                    ph.TakeDamage(damage);
-                }
+                    if (ph != null)
+                    {
+                        int damage =
+                            isSuperSaiyan
+                            ? Mathf.RoundToInt(
+                                45 *
+                                damageMultiplier
+                              )
+                            : 45;
 
-                EnemyState playerState = hit.collider.GetComponent<EnemyState>();
-                if (playerState != null)
-                {
-                    playerState.Stun(3f);
+                        ph.TakeDamage(damage);
+                    }
+
+                    EnemyState playerState =
+                        hit.collider.GetComponent<EnemyState>();
+
+                    if (playerState != null)
+                    {
+                        playerState.Stun(0.2f);
+                    }
                 }
             }
-        }
 
-        yield return new WaitForSeconds(3f);
+            timer += tickRate;
+
+            yield return new WaitForSeconds(tickRate);
+        }
 
         if (kC != null)
             kC.SetActive(false);

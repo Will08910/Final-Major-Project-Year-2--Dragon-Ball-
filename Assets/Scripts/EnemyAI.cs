@@ -192,19 +192,7 @@ public class EnemyAI : MonoBehaviour
         {
             if (aggressiveMode)
             {
-                if (random < 0.65f)
-                {
-                    currentState = AIState.Melee;
-                    return;
-                }
-
-                if (random < 0.9f)
-                {
-                    attacks.UseMeteorStrike();
-                    return;
-                }
-
-                currentState = AIState.Wander;
+                attacks.UseMeteorStrike();
                 return;
             }
             else

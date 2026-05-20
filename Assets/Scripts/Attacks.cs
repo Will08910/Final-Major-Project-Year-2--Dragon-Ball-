@@ -8,6 +8,8 @@ public class Attacks : MonoBehaviour
     public GameObject kC;
     public GameObject kCB;
     public Animator extraEffectsAnim;
+    public AudioSource chargeSound;
+    public AudioSource fireSound;
 
     [Header("Meteor Strike")]
     public GameObject meteorStrike;
@@ -77,8 +79,6 @@ public class Attacks : MonoBehaviour
     public float kiBlastLifetime = 8f;
     public float kiBlastCooldown = 0.5f;
     public int kiBlastCost = 50;
-
-    public AudioSource kiBlastSound;
 
     private bool kiBlastOnCooldown = false;
     private bool meteorOnCooldown = false;
@@ -358,7 +358,6 @@ public class Attacks : MonoBehaviour
         {
             UseKi(kiBlastCost);
             SpawnKiBlast();
-            kiBlastSound.Play();
             StartCoroutine(KiBlastCooldownCoroutine());
         }
     }
@@ -518,6 +517,7 @@ public class Attacks : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
         lightning.SetActive(false);
+        
         kC.SetActive(false);
         canvas1.SetActive(false);
         kCB.SetActive(false);
