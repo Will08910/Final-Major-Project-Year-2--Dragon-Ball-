@@ -8,7 +8,6 @@ public class BeamClashTrigger : MonoBehaviour
 
     void OnEnable()
     {
-        // Reset so the trigger can fire again when the beam object is reused.
         hasClashed = false;
         Debug.LogFormat("[BeamClashTrigger] OnEnable - '{0}' reset hasClashed = false", gameObject.name);
     }
@@ -61,7 +60,6 @@ public class BeamClashTrigger : MonoBehaviour
                 Debug.LogWarning("[BeamClashTrigger] clashManager is null - cannot start clash");
             }
 
-            // deactivate both beam objects (existing behavior)
             gameObject.SetActive(false);
             other.gameObject.SetActive(false);
             Debug.LogFormat("[BeamClashTrigger] Deactivated beams '{0}' and '{1}'", gameObject.name, other.gameObject.name);

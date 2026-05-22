@@ -105034,6 +105034,7 @@ MonoBehaviour:
   - {fileID: 1150576072}
   - {fileID: 1150576069}
   A17: {fileID: 718575513}
+  Gohan: {fileID: 1587452003}
 --- !u!114 &1062968455
 MonoBehaviour:
   m_ObjectHideFlags: 0

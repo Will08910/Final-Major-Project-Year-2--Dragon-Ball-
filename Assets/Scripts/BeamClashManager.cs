@@ -39,6 +39,7 @@ public class BeamClashManager : MonoBehaviour
     private bool clashRunning;
 
     public GameObject A17;
+    public GameObject Gohan;
 
     void Start()
     {
@@ -48,6 +49,7 @@ public class BeamClashManager : MonoBehaviour
     private void Update()
     {
         A17.SetActive(true);
+        Gohan.SetActive(true);
     }
 
     public void StartBeamClash()

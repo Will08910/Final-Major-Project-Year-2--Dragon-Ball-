@@ -26,7 +26,7 @@ public class MeleeAttacks : MonoBehaviour
 
     [Header("Audio")]
     public AudioSource attackSound;
-    public AudioClip[] attackSounds; // 0-3 = combo attacks
+    public AudioClip[] attackSounds;
 
     private bool isAttacking = false;
     private bool comboOnCooldown = false;
@@ -113,7 +113,7 @@ public class MeleeAttacks : MonoBehaviour
         isAttacking = false;
         currentAttackStep = -1;
 
-        // Heavy finisher cooldown
+
         if (attackStep == 3)
             StartCoroutine(ComboCooldownCoroutine());
     }
@@ -143,7 +143,7 @@ public class MeleeAttacks : MonoBehaviour
 
         hitEnemies.Add(id);
 
-        // PLAY HIT SOUND ONLY WHEN ENEMY IS HIT
+
         if (attackSound != null &&
             currentAttackStep >= 0 &&
             currentAttackStep < attackSounds.Length)
@@ -247,7 +247,7 @@ public class MeleeAttacks : MonoBehaviour
 
     public void TriggerAttack()
     {
-        // Block attacks when stunned
+
         if (characterState != null &&
             characterState.isStunned)
             return;
