@@ -427,7 +427,7 @@ public class EnemyAttacks : MonoBehaviour
                 Physics.RaycastAll(
                     transform.position,
                     transform.forward,
-                    range
+                    135f
                 );
 
             foreach (RaycastHit hit in hits)

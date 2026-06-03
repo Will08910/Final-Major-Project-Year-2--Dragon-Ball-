@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FlyController : MonoBehaviour
 {
-    public EnemyState characterState;
     public float moveSpeed = 10f;
     public float verticalSpeed = 5f;
     float targetFOV;
@@ -16,60 +14,92 @@ public class FlyController : MonoBehaviour
     public float boostKiDrainPerSecond = 100f;
 
     private Rigidbody rb;
-    public AudioSource boostSound;
+    private EnemyState characterState;
 
-    [Tooltip("Optional: explicit enemy to move toward. If null the script will search for the closest enemy.")]
     public Transform enemyTarget;
     public float autoTargetRange = 100f;
 
+    [Header("Boost Toggle (Controller)")]
+    public KeyCode boostToggleButton = KeyCode.JoystickButton8;
+    private bool boostActive = false;
+
+    private Coroutine fadeCoroutine;
+
+    public TrailRenderer[] boostTrailRenderers;
+    private float[] originalTrailTimes;
+
+    [Header("Movement damping")]
+    [Tooltip("How quickly the player slows to a stop when there's no input (higher = faster).")]
+    public float stopDamping = 12f;
+    [Tooltip("Velocity magnitude under which horizontal velocity is snapped to zero.")]
+    public float stopThreshold = 0.05f;
+
+    [Header("Collision handling")]
+    [Tooltip("If collision relative velocity is below this, zero horizontal drift on collision.")]
+    public float collisionStopThreshold = 2f;
+    [Tooltip("How quickly horizontal drift is reduced while staying in contact.")]
+    public float collisionFriction = 8f;
+
+    [Header("Idle drag")]
+    [Tooltip("Linear drag applied when no input to kill residual drift.")]
+    public float idleDrag = 8f;
+
     void Start()
     {
-        if (characterState == null)
-            characterState = GetComponent<EnemyState>();
         rb = GetComponent<Rigidbody>();
-        boostFly.SetActive(false);
+        characterState = GetComponent<EnemyState>();
+
+        if (boostFly != null)
+            boostFly.SetActive(false);
 
         rb.angularDamping = 0f;
+
+        // Prevent rotation-induced drift
+        rb.constraints |= RigidbodyConstraints.FreezeRotation;
+        rb.angularDamping = 5f;
+
+        // Prevent unexpected linear drift by default
+        rb.linearDamping = 0f;
+
+        if ((boostTrailRenderers == null || boostTrailRenderers.Length == 0) && boostFly != null)
+        {
+            boostTrailRenderers = boostFly.GetComponentsInChildren<TrailRenderer>(true);
+        }
+
+        if (boostTrailRenderers != null && boostTrailRenderers.Length > 0)
+        {
+            originalTrailTimes = new float[boostTrailRenderers.Length];
+            for (int i = 0; i < boostTrailRenderers.Length; i++)
+            {
+                var tr = boostTrailRenderers[i];
+                originalTrailTimes[i] = tr != null ? tr.time : 0.5f;
+            }
+        }
     }
 
     void FixedUpdate()
     {
-        if (rb.linearVelocity.magnitude < 0.1f)
-        {
-            rb.linearVelocity = Vector3.zero;
-        }
-
         if (characterState != null && characterState.isStunned)
-        {
             return;
-        }
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        Vector3 forward;
-        Transform target = enemyTarget ?? FindClosestEnemy();
-        if (target != null)
-        {
-            forward = (target.position - transform.position).normalized;
-            if (forward.sqrMagnitude <= 0.0001f)
-                forward = transform.forward;
-        }
-        else
-        {
-            forward = transform.forward;
-        }
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
 
-        Vector3 right = Vector3.Cross(Vector3.up, forward);
-        if (right.sqrMagnitude <= 0.0001f)
-            right = transform.right;
-        right = right.normalized;
+        Vector3 right = transform.right;
+        right.y = 0f;
+        right = right.sqrMagnitude > 0.0001f ? right.normalized : Vector3.right;
 
         float currentMoveSpeed;
         float currentVerticalSpeed;
-        bool boostInput = Input.GetKey(KeyCode.LeftShift);
+
+        bool boostInputHold = Input.GetKey(KeyCode.LeftShift);
         bool hasKi = attacksScript == null || attacksScript.currentKi > 0f;
-        bool canBoost = boostInput && hasKi;
+        bool boostRequested = boostInputHold || boostActive;
+        bool canBoost = boostRequested && hasKi;
 
         if (canBoost)
         {
@@ -77,37 +107,64 @@ public class FlyController : MonoBehaviour
             currentVerticalSpeed = 30f;
 
             if (attacksScript != null)
-            {
                 attacksScript.currentKi = Mathf.Max(0f, attacksScript.currentKi - boostKiDrainPerSecond * Time.fixedDeltaTime);
-            }
         }
         else
         {
             currentMoveSpeed = 20f;
             currentVerticalSpeed = 20f;
+
+            if (boostActive && !hasKi)
+            {
+                boostActive = false;
+                DisableBoostVisuals();
+            }
         }
 
-        Vector3 move = (forward * v + right * h) * currentMoveSpeed;
+        Vector3 horizontalDesired = (forward * v + right * h) * currentMoveSpeed;
 
-        float vertical = 0f;
+        bool hasHorizontalInput = Mathf.Abs(h) >= 0.1f || Mathf.Abs(v) >= 0.1f;
+        bool manualVerticalActive = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftControl);
+        float manualVertical = 0f;
         if (Input.GetKey(KeyCode.Space))
-            vertical = currentVerticalSpeed;
+            manualVertical = currentVerticalSpeed;
         else if (Input.GetKey(KeyCode.LeftControl))
-            vertical = -currentVerticalSpeed;
+            manualVertical = -currentVerticalSpeed;
 
-        Vector3 newVelocity = move + Vector3.up * vertical;
+        if (rb == null) return;
 
-
-        if (Mathf.Abs(h) < 0.1f && Mathf.Abs(v) < 0.1f)
+        if (hasHorizontalInput || manualVerticalActive)
         {
-            newVelocity.x = 0f;
-            newVelocity.z = 0f;
+            // When player provides input, remove idle drag and directly set horizontal components.
+            rb.linearDamping = 0f;
+
+            Vector3 targetVelocity = rb.linearVelocity;
+
+            if (hasHorizontalInput)
+            {
+                targetVelocity.x = horizontalDesired.x;
+                targetVelocity.z = horizontalDesired.z;
+            }
+
+            if (manualVerticalActive)
+            {
+                targetVelocity.y = manualVertical;
+            }
+
+            rb.linearVelocity = targetVelocity;
         }
-
-
-        if (!Input.GetKey(KeyCode.Space) && !Input.GetKey(KeyCode.LeftControl))
+        else
         {
+            // No input: apply drag and damping to stop residual drift while preserving vertical velocity.
+            rb.linearDamping = idleDrag;
 
+            Vector3 horizontalVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            Vector3 damped = Vector3.Lerp(horizontalVel, Vector3.zero, stopDamping * Time.fixedDeltaTime);
+
+            if (damped.magnitude < stopThreshold)
+                damped = Vector3.zero;
+
+            rb.linearVelocity = new Vector3(damped.x, rb.linearVelocity.y, damped.z);
         }
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.W) ||
@@ -121,54 +178,132 @@ public class FlyController : MonoBehaviour
         }
 
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * 5f);
-
-        rb.linearVelocity = newVelocity;
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(boostToggleButton))
         {
-            boostFlyFade.SetBool("Fade", false);
-            boostFly.SetActive(true);
-            boostSound.Play();
+            boostActive = !boostActive;
+
+            if (boostActive)
+                EnableBoostVisuals();
+            else
+                DisableBoostVisuals();
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+            EnableBoostVisuals();
 
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
-            StartCoroutine(FadeTrail());
-            boostSound.Stop();
+            if (!boostActive)
+                DisableBoostVisuals();
         }
 
-        if (attacksScript != null && attacksScript.currentKi <= 0f && boostFly.activeSelf)
+        if (attacksScript != null && attacksScript.currentKi <= 0f && (boostFly != null && boostFly.activeSelf || boostActive))
         {
-            boostFlyFade.SetBool("Fade", true);
+            boostActive = false;
+            DisableBoostVisuals();
         }
-    }
 
-    IEnumerator FadeTrail()
-    {
-        boostFlyFade.SetBool("Fade", true);
-        yield return new WaitForSeconds(3f);
-    }
-
-    private Transform FindClosestEnemy()
-    {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        float bestDist = autoTargetRange;
-        Transform best = null;
-
-        foreach (var go in enemies)
+        if (boostTrailRenderers != null)
         {
-            if (go == null) continue;
-            float d = Vector3.Distance(transform.position, go.transform.position);
-            if (d < bestDist)
+            for (int i = 0; i < boostTrailRenderers.Length; i++)
             {
-                bestDist = d;
-                best = go.transform;
+                var tr = boostTrailRenderers[i];
+                if (tr == null) continue;
+                if (Mathf.Abs(tr.time - 0.5f) > 0.0001f)
+                    tr.time = 0.5f;
             }
         }
+    }
 
-        return best;
+    void OnCollisionEnter(Collision collision)
+    {
+        if (rb == null) return;
+
+        if (collision.collider.isTrigger) return;
+
+        // Immediately kill horizontal velocity on collisions with world geometry to prevent drifting.
+        Vector3 v = rb.linearVelocity;
+        v.x = 0f;
+        v.z = 0f;
+        rb.linearVelocity = v;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if (rb == null) return;
+
+        if (collision.collider.isTrigger) return;
+
+        // Gradually remove horizontal drift while staying in contact with static objects
+        Vector3 vel = rb.linearVelocity;
+        Vector3 horiz = new Vector3(vel.x, 0f, vel.z);
+        Vector3 reduced = Vector3.Lerp(horiz, Vector3.zero, collisionFriction * Time.fixedDeltaTime);
+        if (reduced.magnitude < stopThreshold) reduced = Vector3.zero;
+        rb.linearVelocity = new Vector3(reduced.x, vel.y, reduced.z);
+    }
+
+    void EnableBoostVisuals()
+    {
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+
+        if (boostFly != null && !boostFly.activeSelf)
+            boostFly.SetActive(true);
+
+        if (boostFlyFade != null)
+            boostFlyFade.SetBool("Fade", false);
+
+        if (boostTrailRenderers != null)
+        {
+            for (int i = 0; i < boostTrailRenderers.Length; i++)
+            {
+                var tr = boostTrailRenderers[i];
+                if (tr == null) continue;
+
+                tr.Clear();
+#if UNITY_2019_1_OR_NEWER
+                tr.emitting = true;
+#endif
+            }
+        }
+    }
+
+    void DisableBoostVisuals()
+    {
+        if (fadeCoroutine == null)
+            fadeCoroutine = StartCoroutine(FadeTrailCoroutine());
+
+        if (boostTrailRenderers != null)
+        {
+            for (int i = 0; i < boostTrailRenderers.Length; i++)
+            {
+                var tr = boostTrailRenderers[i];
+                if (tr == null) continue;
+#if UNITY_2019_1_OR_NEWER
+                tr.emitting = false;
+#endif
+            }
+        }
+    }
+
+    System.Collections.IEnumerator FadeTrailCoroutine()
+    {
+        if (boostFlyFade != null)
+            boostFlyFade.SetBool("Fade", true);
+
+        yield return new WaitForSeconds(0.25f);
+
+        if (boostFly != null)
+            boostFly.SetActive(false);
+
+        fadeCoroutine = null;
     }
 }

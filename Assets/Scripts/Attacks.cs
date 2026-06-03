@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class Attacks : MonoBehaviour
@@ -10,6 +11,7 @@ public class Attacks : MonoBehaviour
     public Animator extraEffectsAnim;
     public AudioSource chargeSound;
     public AudioSource fireSound;
+    InputAction Beam;
 
     [Header("Meteor Strike")]
     public GameObject meteorStrike;
@@ -19,6 +21,7 @@ public class Attacks : MonoBehaviour
     public int meteorStrikeCost = 400;
     public float meteorCooldown = 4f;
     public AudioSource meteorSound;
+    InputAction Jump;
 
     [Header("Super Saiyan")]
     public GameObject superSaiyan;
@@ -26,6 +29,7 @@ public class Attacks : MonoBehaviour
     public TrailRenderer boostTrail;
     public ParticleSystem boost;
     public Material hairColour;
+    InputAction Transform;
 
     private Color originalTrailColor;
     private float originalStartAlpha;
@@ -79,6 +83,7 @@ public class Attacks : MonoBehaviour
     public float kiBlastLifetime = 8f;
     public float kiBlastCooldown = 0.5f;
     public int kiBlastCost = 50;
+    InputAction Blast;
 
     private bool kiBlastOnCooldown = false;
     private bool meteorOnCooldown = false;
@@ -92,6 +97,10 @@ public class Attacks : MonoBehaviour
 
     void Start()
     {
+        Transform = InputSystem.actions.FindAction("Transform");
+        Jump = InputSystem.actions.FindAction("Jump");
+        Beam = InputSystem.actions.FindAction("Beam");
+        Blast = InputSystem.actions.FindAction("Blast");
         rb = GetComponent<Rigidbody>();
         meteorStrike.SetActive(false);
 
@@ -171,7 +180,7 @@ public class Attacks : MonoBehaviour
 
     void HandleSuperSaiyan()
     {
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Transform.WasPressedThisFrame())
         {
             if (!isSuperSaiyan && currentKi > 0)
             {
@@ -296,7 +305,7 @@ public class Attacks : MonoBehaviour
 
     void MeteorStrike()
     {
-        if (Input.GetKeyDown(KeyCode.E) && !meteorOnCooldown && currentKi >= meteorStrikeCost)
+        if (Jump.WasPressedThisFrame() && !meteorOnCooldown && currentKi >= meteorStrikeCost)
         {
             UseKi(meteorStrikeCost);
             meteorStrike.SetActive(true);
@@ -354,7 +363,7 @@ public class Attacks : MonoBehaviour
 
     void HandleKiBlastInput()
     {
-        if (Input.GetMouseButtonDown(1) && !isFiring && !isCharging && kiBlastPrefab != null && !kiBlastOnCooldown && currentKi >= kiBlastCost)
+        if (Blast.WasPressedThisFrame() && !isFiring && !isCharging && kiBlastPrefab != null && !kiBlastOnCooldown && currentKi >= kiBlastCost)
         {
             UseKi(kiBlastCost);
             SpawnKiBlast();
@@ -481,15 +490,15 @@ public class Attacks : MonoBehaviour
 
     void HandleKamehameha()
     {
-        if (Input.GetKeyDown(KeyCode.R) && !isFiring && !isCharging && currentKi >= 2000)
+        if (Beam.WasPressedThisFrame() && !isFiring && !isCharging && currentKi >= 2000)
         {
             StartCoroutine(KamehamehaRoutine());
             UseKi(2000);
             camController.enabled = true;
             cam.SetTrigger("Fov");
         }
-    }
 
+    }
     IEnumerator KamehamehaRoutine()
     {
         isFiring = true;

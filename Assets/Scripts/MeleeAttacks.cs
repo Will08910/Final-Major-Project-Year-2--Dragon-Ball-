@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MeleeAttacks : MonoBehaviour
 {
@@ -39,8 +40,11 @@ public class MeleeAttacks : MonoBehaviour
 
     public EnemyState characterState;
 
+    InputAction Attack;
+
     void Start()
     {
+        Attack = InputSystem.actions.FindAction("Attack");
         if (hitbox == null)
             hitbox = GetComponent<Collider>();
 
@@ -68,7 +72,7 @@ public class MeleeAttacks : MonoBehaviour
         if (Time.time - lastAttackTime > comboResetTime)
             comboIndex = 0;
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Attack.WasPressedThisFrame())
         {
             if (comboOnCooldown)
                 return;

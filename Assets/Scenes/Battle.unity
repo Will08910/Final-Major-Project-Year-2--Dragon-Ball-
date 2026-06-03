@@ -116544,6 +116544,7 @@ GameObject:
   - component: {fileID: 1348088264}
   - component: {fileID: 1348088265}
   - component: {fileID: 1348088266}
+  - component: {fileID: 1348088267}
   m_Layer: 0
   m_Name: Gohan
   m_TagString: Player
@@ -116651,7 +116652,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed7f7447de7ab2f4b91924686e5f6f47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  characterState: {fileID: 1348088264}
   moveSpeed: 35
   verticalSpeed: 30
   boostFly: {fileID: 2062990972}
@@ -116659,9 +116659,14 @@ MonoBehaviour:
   cam: {fileID: 2046501511}
   attacksScript: {fileID: 1348088257}
   boostKiDrainPerSecond: 300
-  boostSound: {fileID: 2062990977}
   enemyTarget: {fileID: 1150576062}
   autoTargetRange: 100
+  boostToggleButton: 338
+  boostTrailRenderers:
+  - {fileID: 587481078}
+  stopDamping: 12
+  stopThreshold: 0.05
+  inputRestoreWindow: 0.18
 --- !u!54 &1348088259
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -117002,6 +117007,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1348088267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348088254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11a0c15a331bed04fabef20d411b87b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyState
+  isStunned: 0
 --- !u!1 &1351857747
 GameObject:
   m_ObjectHideFlags: 0
