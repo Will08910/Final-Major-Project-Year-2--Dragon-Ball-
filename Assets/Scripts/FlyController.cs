@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FlyController : MonoBehaviour
 {
@@ -7,6 +8,7 @@ public class FlyController : MonoBehaviour
     float targetFOV;
     public GameObject boostFly;
     public Animator boostFlyFade;
+    InputAction MoveVert;
 
     public Camera cam;
 
@@ -46,6 +48,8 @@ public class FlyController : MonoBehaviour
 
     void Start()
     {
+        MoveVert = InputSystem.actions.FindAction("MoveVert");
+
         rb = GetComponent<Rigidbody>();
         characterState = GetComponent<EnemyState>();
 
@@ -54,11 +58,9 @@ public class FlyController : MonoBehaviour
 
         rb.angularDamping = 0f;
 
-        // Prevent rotation-induced drift
         rb.constraints |= RigidbodyConstraints.FreezeRotation;
         rb.angularDamping = 5f;
 
-        // Prevent unexpected linear drift by default
         rb.linearDamping = 0f;
 
         if ((boostTrailRenderers == null || boostTrailRenderers.Length == 0) && boostFly != null)
@@ -84,6 +86,30 @@ public class FlyController : MonoBehaviour
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
+
+        float rightStickY = 0f;
+        if (Gamepad.current != null)
+        {
+            rightStickY = Gamepad.current.rightStick.ReadValue().y;
+        }
+        else if (MoveVert != null)
+        {
+            try
+            {
+                rightStickY = MoveVert.ReadValue<float>();
+            }
+            catch
+            {
+                try
+                {
+                    rightStickY = MoveVert.ReadValue<Vector2>().y;
+                }
+                catch
+                {
+                    rightStickY = 0f;
+                }
+            }
+        }
 
         Vector3 forward = transform.forward;
         forward.y = 0f;
@@ -131,11 +157,17 @@ public class FlyController : MonoBehaviour
         else if (Input.GetKey(KeyCode.LeftControl))
             manualVertical = -currentVerticalSpeed;
 
+        const float rightStickDeadzone = 0.5f;
+        if (Mathf.Abs(rightStickY) >= rightStickDeadzone)
+        {
+            manualVerticalActive = true;
+            manualVertical = rightStickY > 0f ? currentVerticalSpeed : -currentVerticalSpeed;
+        }
+
         if (rb == null) return;
 
         if (hasHorizontalInput || manualVerticalActive)
         {
-            // When player provides input, remove idle drag and directly set horizontal components.
             rb.linearDamping = 0f;
 
             Vector3 targetVelocity = rb.linearVelocity;
@@ -150,12 +182,15 @@ public class FlyController : MonoBehaviour
             {
                 targetVelocity.y = manualVertical;
             }
+            else if (Mathf.Abs(rightStickY) < rightStickDeadzone && !Input.GetKey(KeyCode.Space) && !Input.GetKey(KeyCode.LeftControl))
+            {
+                targetVelocity.y = 0f;
+            }
 
             rb.linearVelocity = targetVelocity;
         }
         else
         {
-            // No input: apply drag and damping to stop residual drift while preserving vertical velocity.
             rb.linearDamping = idleDrag;
 
             Vector3 horizontalVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
@@ -164,7 +199,15 @@ public class FlyController : MonoBehaviour
             if (damped.magnitude < stopThreshold)
                 damped = Vector3.zero;
 
-            rb.linearVelocity = new Vector3(damped.x, rb.linearVelocity.y, damped.z);
+            float currentY = rb.linearVelocity.y;
+            Vector3 newVel = new Vector3(damped.x, currentY, damped.z);
+
+            if (Mathf.Abs(rightStickY) < rightStickDeadzone && !Input.GetKey(KeyCode.Space) && !Input.GetKey(KeyCode.LeftControl))
+            {
+                newVel.y = 0f;
+            }
+
+            rb.linearVelocity = newVel;
         }
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.W) ||
@@ -225,7 +268,6 @@ public class FlyController : MonoBehaviour
 
         if (collision.collider.isTrigger) return;
 
-        // Immediately kill horizontal velocity on collisions with world geometry to prevent drifting.
         Vector3 v = rb.linearVelocity;
         v.x = 0f;
         v.z = 0f;
@@ -239,7 +281,6 @@ public class FlyController : MonoBehaviour
 
         if (collision.collider.isTrigger) return;
 
-        // Gradually remove horizontal drift while staying in contact with static objects
         Vector3 vel = rb.linearVelocity;
         Vector3 horiz = new Vector3(vel.x, 0f, vel.z);
         Vector3 reduced = Vector3.Lerp(horiz, Vector3.zero, collisionFriction * Time.fixedDeltaTime);

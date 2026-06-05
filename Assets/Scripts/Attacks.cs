@@ -59,6 +59,7 @@ public class Attacks : MonoBehaviour
     public GameObject chargeKi;
     public Animator kiCharge;
     public float chargeCooldown = 0.5f;
+    InputAction Charge;
 
     private bool isCharging = false;
     private bool chargeOnCooldown = false;
@@ -97,6 +98,7 @@ public class Attacks : MonoBehaviour
 
     void Start()
     {
+        Charge = InputSystem.actions.FindAction("Charge");
         Transform = InputSystem.actions.FindAction("Transform");
         Jump = InputSystem.actions.FindAction("Jump");
         Beam = InputSystem.actions.FindAction("Beam");
@@ -434,7 +436,7 @@ public class Attacks : MonoBehaviour
 
     void HandleCharge()
     {
-        if (Input.GetKeyDown(KeyCode.C) && !isFiring && !isCharging && !chargeOnCooldown)
+        if (Charge.WasPressedThisFrame() && !isFiring && !isCharging && !chargeOnCooldown)
         {
             isCharging = true;
 
@@ -450,7 +452,7 @@ public class Attacks : MonoBehaviour
             chargeKi.SetActive(true);
         }
 
-        if (Input.GetKeyUp(KeyCode.C) && isCharging)
+        if (Charge.WasReleasedThisFrame() && isCharging)
         {
             isCharging = false;
 
